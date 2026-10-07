@@ -26,18 +26,62 @@ export default function AdminDashboard() {
 
   const totalStats = useMemo(() => {
     const totalStudents = students.filter((s: { status: string }) => s.status === 'Active').length;
-    let present = 0, absent = 0, sick = 0, od = 0, staffWard = 0;
-    houseSummaries.forEach((h: { present: number; absent: number; sick: number; od: number; staffWard: number }) => {
-      present += h.present; absent += h.absent; sick += h.sick; od += h.od; staffWard += h.staffWard;
+    let morningPresent = 0, morningAbsent = 0;
+    let nightPresent = 0, nightAbsent = 0;
+    let totalPresent = 0, totalAbsent = 0, totalSick = 0, totalOd = 0, totalStaffWard = 0;
+    
+    houseSummaries.forEach((h: any) => {
+      // Morning stats
+      morningPresent += h.present;
+      morningAbsent += h.absent;
+      totalPresent += h.present;
+      totalAbsent += h.absent;
+      totalSick += h.sick;
+      totalOd += h.od;
+      totalStaffWard += h.staffWard;
+      
+      // Night stats
+      nightPresent += h.nightSummary.present;
+      nightAbsent += h.nightSummary.absent;
+      totalPresent += h.nightSummary.present;
+      totalAbsent += h.nightSummary.absent;
+      totalSick += h.nightSummary.sick;
+      totalOd += h.nightSummary.od;
+      totalStaffWard += h.nightSummary.staffWard;
     });
-    const attendancePercentage = totalStudents > 0 ? ((present / totalStudents) * 100).toFixed(1) : '0.0';
+    
+    // Calculate overall percentage (average of morning and night)
+    const morningPercentage = totalStudents > 0 ? ((morningPresent / totalStudents) * 100) : 0;
+    const nightPercentage = totalStudents > 0 ? ((nightPresent / totalStudents) * 100) : 0;
+    const attendancePercentage = ((morningPercentage + nightPercentage) / 2).toFixed(1);
+    
     const completedHouses = houseSummaries.filter((h: { attendanceCompleted: boolean }) => h.attendanceCompleted).length;
-    return { totalStudents, present, absent, sick, od, staffWard, attendancePercentage, completedHouses, totalHouses: houseSummaries.length };
+    const morningCompleted = houseSummaries.filter((h: any) => h.morningDone).length;
+    const nightCompleted = houseSummaries.filter((h: any) => h.nightDone).length;
+    
+    return { 
+      totalStudents, 
+      morningPresent, morningAbsent,
+      nightPresent, nightAbsent,
+      present: totalPresent, 
+      absent: totalAbsent, 
+      sick: totalSick, 
+      od: totalOd, 
+      staffWard: totalStaffWard, 
+      attendancePercentage, 
+      completedHouses, 
+      morningCompleted,
+      nightCompleted,
+      totalHouses: houseSummaries.length 
+    };
   }, [houseSummaries, students]);
 
-  const barChartData = houseSummaries.map((h: { house_name: string; present: number; absent: number; sick: number; od: number; staffWard: number }) => ({
+  const barChartData = houseSummaries.map((h: any) => ({
     name: h.house_name.replace(' Sr Boys', '').replace(' Jr Boys', '').replace(' Girls', ''),
-    Present: h.present, Absent: h.absent, Sick: h.sick, OD: h.od, 'Staff Ward': h.staffWard,
+    'Morning Present': h.present,
+    'Morning Absent': h.absent,
+    'Night Present': h.nightSummary.present,
+    'Night Absent': h.nightSummary.absent,
   }));
 
   const pieData = [
@@ -60,11 +104,13 @@ export default function AdminDashboard() {
 
   const statCards = [
     { label: 'Total Students', value: totalStats.totalStudents, icon: Users, lightColor: 'bg-blue-50 text-blue-700' },
-    { label: 'Present', value: totalStats.present, icon: UserCheck, lightColor: 'bg-green-50 text-green-700' },
-    { label: 'Absent', value: totalStats.absent, icon: UserX, lightColor: 'bg-red-50 text-red-700' },
+    { label: '☀️ Morning Present', value: totalStats.morningPresent, icon: UserCheck, lightColor: 'bg-orange-50 text-orange-700' },
+    { label: '🌙 Night Present', value: totalStats.nightPresent, icon: UserCheck, lightColor: 'bg-indigo-50 text-indigo-700' },
+    { label: 'Total Present', value: totalStats.present, icon: CheckCircle2, lightColor: 'bg-green-50 text-green-700' },
+    { label: 'Total Absent', value: totalStats.absent, icon: UserX, lightColor: 'bg-red-50 text-red-700' },
     { label: 'Sick', value: totalStats.sick, icon: Heart, lightColor: 'bg-yellow-50 text-yellow-700' },
-    { label: 'On Duty', value: totalStats.od, icon: Briefcase, lightColor: 'bg-indigo-50 text-indigo-700' },
-    { label: 'Staff Ward', value: totalStats.staffWard, icon: Stethoscope, lightColor: 'bg-purple-50 text-purple-700' },
+    { label: 'On Duty', value: totalStats.od, icon: Briefcase, lightColor: 'bg-purple-50 text-purple-700' },
+    { label: 'Staff Ward', value: totalStats.staffWard, icon: Stethoscope, lightColor: 'bg-pink-50 text-pink-700' },
   ];
 
   return (
@@ -74,15 +120,23 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
           <p className="text-gray-500 text-sm">Overview of all houses - {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm"><CheckCircle2 className="w-4 h-4" /><span>{totalStats.completedHouses}/{totalStats.totalHouses} Completed</span></div>
-          {totalStats.completedHouses < totalStats.totalHouses && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm"><AlertTriangle className="w-4 h-4" /><span>{totalStats.totalHouses - totalStats.completedHouses} Pending</span></div>
-          )}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm">
+            <span>☀️</span>
+            <span>Morning: {totalStats.morningCompleted}/{totalStats.totalHouses}</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm">
+            <span>🌙</span>
+            <span>Night: {totalStats.nightCompleted}/{totalStats.totalHouses}</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Both: {totalStats.completedHouses}/{totalStats.totalHouses}</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {statCards.map(card => (
           <div key={card.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className={`w-10 h-10 rounded-lg ${card.lightColor} flex items-center justify-center mb-3`}><card.icon className="w-5 h-5" /></div>
@@ -111,8 +165,10 @@ export default function AdminDashboard() {
               <BarChart data={barChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} />
                 <Tooltip /><Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="Present" fill="#10b981" radius={[2, 2, 0, 0]} /><Bar dataKey="Absent" fill="#ef4444" radius={[2, 2, 0, 0]} />
-                <Bar dataKey="Sick" fill="#f59e0b" radius={[2, 2, 0, 0]} /><Bar dataKey="OD" fill="#3b82f6" radius={[2, 2, 0, 0]} /><Bar dataKey="Staff Ward" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Morning Present" fill="#f97316" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Morning Absent" fill="#fca5a5" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Night Present" fill="#6366f1" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Night Absent" fill="#a5b4fc" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -151,32 +207,39 @@ export default function AdminDashboard() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">House</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-600">Present</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-600">Absent</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-600">Sick</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-600">OD</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-600">SW</th>
+                <th colSpan={2} className="text-center px-3 py-2 font-semibold text-orange-700 bg-orange-50 border-b border-orange-200">☀️ Morning</th>
+                <th colSpan={2} className="text-center px-3 py-2 font-semibold text-indigo-700 bg-indigo-50 border-b border-indigo-200">🌙 Night</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">Total</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">%</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">Status</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">Action</th>
               </tr>
+              <tr className="bg-gray-50 border-b">
+                <th></th>
+                <th className="text-center px-3 py-2 text-xs font-medium text-green-700">Present</th>
+                <th className="text-center px-3 py-2 text-xs font-medium text-red-700">Absent</th>
+                <th className="text-center px-3 py-2 text-xs font-medium text-green-700">Present</th>
+                <th className="text-center px-3 py-2 text-xs font-medium text-red-700">Absent</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {houseSummaries.map((house: { id: string; house_name: string; present: number; absent: number; sick: number; od: number; staffWard: number; total: number; percentage: string; attendanceCompleted: boolean; warden?: { name: string } }) => (
+              {houseSummaries.map((house: any) => (
                 <tr key={house.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3"><div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${house.attendanceCompleted ? 'bg-green-500' : 'bg-yellow-500'}`}></span><span className="font-medium">{house.house_name}</span></div></td>
-                  <td className="text-center px-3 py-3 text-green-600 font-medium">{house.present}</td>
-                  <td className="text-center px-3 py-3 text-red-600 font-medium">{house.absent}</td>
-                  <td className="text-center px-3 py-3 text-yellow-600 font-medium">{house.sick}</td>
-                  <td className="text-center px-3 py-3 text-blue-600 font-medium">{house.od}</td>
-                  <td className="text-center px-3 py-3 text-purple-600 font-medium">{house.staffWard}</td>
+                  <td className="text-center px-3 py-3 text-green-600 font-medium bg-orange-50/30">{house.present}</td>
+                  <td className="text-center px-3 py-3 text-red-600 font-medium bg-orange-50/30">{house.absent}</td>
+                  <td className="text-center px-3 py-3 text-green-600 font-medium bg-indigo-50/30">{house.nightSummary.present}</td>
+                  <td className="text-center px-3 py-3 text-red-600 font-medium bg-indigo-50/30">{house.nightSummary.absent}</td>
                   <td className="text-center px-3 py-3 font-bold">{house.total}</td>
                   <td className="text-center px-3 py-3 font-medium">{house.percentage}%</td>
                   <td className="text-center px-3 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${(house as any).morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️M</span>
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${(house as any).nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙N</span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ {house.morningDone ? '✓' : '⏳'}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 {house.nightDone ? '✓' : '⏳'}</span>
                     </div>
                   </td>
                   <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</button></td>
@@ -190,7 +253,7 @@ export default function AdminDashboard() {
       <div>
         <h3 className="font-semibold text-gray-800 mb-4">House Overview Cards</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {houseSummaries.map((house: { id: string; house_name: string; present: number; absent: number; sick: number; od: number; staffWard: number; total: number; percentage: string; attendanceCompleted: boolean; warden?: { name: string } }) => (
+          {houseSummaries.map((house: any) => (
             <div key={house.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-bold text-sm text-gray-800">{house.house_name.toUpperCase()}</h4>
@@ -198,18 +261,36 @@ export default function AdminDashboard() {
               </div>
               <p className="text-3xl font-bold text-indigo-600">{house.total}</p>
               <p className="text-xs text-gray-500 mb-3">Total Students</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex justify-between"><span className="text-gray-500">Present:</span><span className="font-medium text-green-600">{house.present}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Absent:</span><span className="font-medium text-red-600">{house.absent}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Sick:</span><span className="font-medium text-yellow-600">{house.sick}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">OD:</span><span className="font-medium text-blue-600">{house.od}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Staff Ward:</span><span className="font-medium text-purple-600">{house.staffWard}</span></div>
+              
+              {/* Morning Attendance */}
+              <div className="mb-2 p-2 bg-orange-50 rounded-lg">
+                <p className="text-xs font-semibold text-orange-700 mb-1">☀️ Morning</p>
+                <div className="grid grid-cols-2 gap-1 text-xs">
+                  <div className="flex justify-between"><span className="text-gray-600">Present:</span><span className="font-medium text-green-600">{house.present}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-600">Absent:</span><span className="font-medium text-red-600">{house.absent}</span></div>
+                </div>
+              </div>
+              
+              {/* Night Attendance */}
+              <div className="mb-2 p-2 bg-indigo-50 rounded-lg">
+                <p className="text-xs font-semibold text-indigo-700 mb-1">🌙 Night</p>
+                <div className="grid grid-cols-2 gap-1 text-xs">
+                  <div className="flex justify-between"><span className="text-gray-600">Present:</span><span className="font-medium text-green-600">{house.nightSummary.present}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-600">Absent:</span><span className="font-medium text-red-600">{house.nightSummary.absent}</span></div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-xs mt-2">
+                <div className="flex justify-between"><span className="text-gray-500">Sick:</span><span className="font-medium text-yellow-600">{house.sick + house.nightSummary.sick}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">OD:</span><span className="font-medium text-blue-600">{house.od + house.nightSummary.od}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Staff Ward:</span><span className="font-medium text-purple-600">{house.staffWard + house.nightSummary.staffWard}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Attendance:</span><span className="font-medium">{house.percentage}%</span></div>
               </div>
+              
               <div className="mt-3 pt-3 border-t">
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${(house as any).morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {(house as any).morningDone ? '✓' : '⏳'}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${(house as any).nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 Night {(house as any).nightDone ? '✓' : '⏳'}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${house.morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {house.morningDone ? '✓' : '⏳'}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 Night {house.nightDone ? '✓' : '⏳'}</span>
                 </div>
                 <p className="text-xs text-gray-500">Warden: <span className="font-medium text-gray-700">{house.warden?.name || 'Not Assigned'}</span></p>
               </div>
