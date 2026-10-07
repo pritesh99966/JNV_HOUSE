@@ -26,7 +26,7 @@ export default function Students() {
       if (!isAdmin && s.house_id !== assignedHouseId) return false;
       if (filterHouse && s.house_id !== filterHouse) return false;
       if (filterClass && s.class !== filterClass) return false;
-      if (search) { const q = search.toLowerCase(); return s.student_name.toLowerCase().includes(q) || s.admission_no.toLowerCase().includes(q) || s.sr_no.includes(q); }
+      if (search) { const q = search.toLowerCase(); return s.student_name.toLowerCase().includes(q) || s.admission_no.toLowerCase().includes(q) || (s.sr_no || '').includes(q); }
       return true;
     });
   }, [students, search, filterHouse, filterClass, isAdmin, assignedHouseId]);
@@ -94,10 +94,10 @@ export default function Students() {
     const exportData = filteredStudents.map((s: Student) => {
       const house = houses.find((h: { id: string }) => h.id === s.house_id);
       return {
-        'Sr No': s.sr_no, 'Admission No': s.admission_no, 'Student Name': s.student_name,
+        'Sr No': s.sr_no || '', 'Admission No': s.admission_no, 'Student Name': s.student_name,
         'Gender': s.gender, 'Class': s.class, 'Section': s.section, 'DOB': s.dob,
         'Father Name': s.father_name, 'Mother Name': s.mother_name, 'Mobile': s.mobile,
-        'House': house?.house_name || '', 'Bed No': s.bed_no, 'Medical Remark': s.medical_remark, 'Status': s.status
+        'House': house?.house_name || '', 'Bed No': s.bed_no || '', 'Medical Remark': s.medical_remark, 'Status': s.status
       };
     });
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -217,11 +217,11 @@ export default function Students() {
                         <div className="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-bold">{student.student_name.charAt(0)}</div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium">{student.sr_no}</td>
+                    <td className="px-4 py-3 font-medium">{student.sr_no || '-'}</td>
                     <td className="px-4 py-3"><span className="font-medium">{student.student_name}</span></td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{student.admission_no}</td>
                     <td className="px-4 py-3">{student.class}-{student.section}</td>
-                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{student.bed_no}</td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{student.bed_no || '-'}</td>
                     <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{house?.house_name}</td>
                     <td className="px-4 py-3"><div className="flex items-center justify-center gap-1"><button onClick={() => openEditForm(student)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"><Edit2 className="w-4 h-4" /></button><button onClick={() => setShowDeleteConfirm(student.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td>
                   </tr>

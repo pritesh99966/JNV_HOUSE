@@ -16,23 +16,23 @@ export default function AttendanceHistory() {
   const [search, setSearch] = useState('');
 
   const filteredRecords = useMemo(() => {
-    return attendance.filter((a: { house_id: string; attendance_date: string; status: string; student_id: string; session: string }) => {
+    return attendance.filter((a: { house_id: string; attendance_date: string; status: string; student_id: string; session?: string }) => {
       if (!isAdmin && a.house_id !== assignedHouseId) return false;
       if (filterHouse && a.house_id !== filterHouse) return false;
       if (filterDate && a.attendance_date !== filterDate) return false;
       if (filterStatus && a.status !== filterStatus) return false;
-      if (filterSession && a.session !== filterSession) return false;
+      if (filterSession && (a.session || 'Morning') !== filterSession) return false;
       if (search) { const student = students.find((s: { id: string; student_name: string }) => s.id === a.student_id); if (!student) return false; const q = search.toLowerCase(); return student.student_name.toLowerCase().includes(q); }
       return true;
-    }).sort((a: { attendance_date: string }, b: { attendance_date: string }) => b.attendance_date.localeCompare(a.attendance_date));
+    }).sort((a: { attendance_date: string }, b: { attendance_date: string }) => (b.attendance_date || '').localeCompare(a.attendance_date || ''));
   }, [attendance, students, filterDate, filterHouse, filterStatus, filterSession, search, isAdmin, assignedHouseId]);
 
   const exportToExcel = () => {
-    const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session: string }) => {
+    const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
       const student = students.find((s: { id: string }) => s.id === a.student_id);
       const house = houses.find((h: { id: string }) => h.id === a.house_id);
       const warden = wardens.find((w: { id: string }) => w.id === a.marked_by);
-      return { Date: a.attendance_date, Session: a.session, Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Admission: student?.admission_no || '', Class: student?.class || '', 'Bed No': student?.bed_no || '', House: house?.house_name || '', Status: a.status, 'Marked By': warden?.name || a.marked_by };
+      return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Admission: student?.admission_no || '', Class: student?.class || '', 'Bed No': student?.bed_no || '', House: house?.house_name || '', Status: a.status, 'Marked By': warden?.name || a.marked_by };
     });
     const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Attendance'); XLSX.writeFile(wb, `attendance_${filterDate}.xlsx`);
   };
@@ -66,13 +66,13 @@ export default function AttendanceHistory() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50"><tr><th className="text-left px-4 py-3 font-medium text-gray-600">Date</th><th className="text-left px-4 py-3 font-medium text-gray-600">Session</th><th className="text-left px-4 py-3 font-medium text-gray-600">Student</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Adm No</th><th className="text-left px-4 py-3 font-medium text-gray-600">Class</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">House</th><th className="text-left px-4 py-3 font-medium text-gray-600">Status</th></tr></thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredRecords.slice(0, 100).map((record: { id: string; attendance_date: string; student_id: string; house_id: string; status: string; session: string }) => {
+              {filteredRecords.slice(0, 100).map((record: { id: string; attendance_date: string; student_id: string; house_id: string; status: string; session?: string }) => {
                 const student = students.find((s: { id: string }) => s.id === record.student_id);
                 const house = houses.find((h: { id: string }) => h.id === record.house_id);
                 return (
                   <tr key={record.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-600">{record.attendance_date}</td>
-                    <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-medium ${sessionColors[record.session] || ''}`}>{record.session === 'Morning' ? '☀️' : '🌙'} {record.session}</span></td>
+                    <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-medium ${sessionColors[record.session || 'Morning'] || ''}`}>{(record.session || 'Morning') === 'Morning' ? '☀️' : '🌙'} {record.session || 'Morning'}</span></td>
                     <td className="px-4 py-3 font-medium">{student?.student_name || 'Unknown'}</td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{student?.admission_no}</td>
                     <td className="px-4 py-3">{student?.class}-{student?.section}</td>

@@ -79,10 +79,10 @@ function HouseDetailsPage() {
                 const att = todayAttendance.find((a: { student_id: string }) => a.student_id === student.id);
                 return (
                   <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">{student.sr_no}</td>
+                    <td className="px-4 py-3">{student.sr_no || '-'}</td>
                     <td className="px-4 py-3 font-medium">{student.student_name}</td>
                     <td className="px-4 py-3">{student.class}-{student.section}</td>
-                    <td className="px-4 py-3">{student.bed_no}</td>
+                    <td className="px-4 py-3">{student.bed_no || '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${att ? statusColors[att.status] : 'bg-gray-100 text-gray-500'}`}>
                         {att?.status || 'Not Marked'}

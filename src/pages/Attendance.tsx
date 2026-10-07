@@ -22,7 +22,7 @@ export default function Attendance() {
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const houseStudents = useMemo(() => students.filter((s: Student) => s.house_id === selectedHouse && s.status === 'Active').sort((a: Student, b: Student) => a.sr_no.localeCompare(b.sr_no)), [students, selectedHouse]);
+  const houseStudents = useMemo(() => students.filter((s: Student) => s.house_id === selectedHouse && s.status === 'Active').sort((a: Student, b: Student) => (a.sr_no || '').localeCompare(b.sr_no || '')), [students, selectedHouse]);
 
   useEffect(() => {
     const existing = getAttendanceForDate(selectedHouse, selectedDate, selectedSession);
@@ -34,7 +34,7 @@ export default function Attendance() {
   const filteredStudents = useMemo(() => {
     return houseStudents.filter((s: Student) => {
       if (filterClass && s.class !== filterClass) return false;
-      if (search) { const q = search.toLowerCase(); return s.student_name.toLowerCase().includes(q) || s.sr_no.includes(q); }
+      if (search) { const q = search.toLowerCase(); return s.student_name.toLowerCase().includes(q) || (s.sr_no || '').includes(q); }
       return true;
     });
   }, [houseStudents, search, filterClass]);
@@ -122,7 +122,7 @@ export default function Attendance() {
             <tbody className="divide-y divide-gray-100">
               {filteredStudents.map((student: Student) => (
                 <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2.5 font-medium">{student.sr_no}</td>
+                  <td className="px-3 py-2.5 font-medium">{student.sr_no || '-'}</td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
                       {student.photo_url ? <img src={student.photo_url} alt="" className="w-7 h-7 rounded-full object-cover" /> : <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-bold">{student.student_name.charAt(0)}</div>}
@@ -130,7 +130,7 @@ export default function Attendance() {
                     </div>
                   </td>
                   <td className="px-3 py-2.5 text-gray-600">{student.class}-{student.section}</td>
-                  <td className="px-3 py-2.5 text-gray-600 hidden sm:table-cell">{student.bed_no}</td>
+                  <td className="px-3 py-2.5 text-gray-600 hidden sm:table-cell">{student.bed_no || '-'}</td>
                   {STATUS_OPTIONS.map(status => (
                     <td key={status} className="text-center px-2 py-2.5">
                       <label className="cursor-pointer inline-flex items-center justify-center">

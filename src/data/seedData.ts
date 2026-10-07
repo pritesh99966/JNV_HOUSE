@@ -99,6 +99,29 @@ function generateAttendance(students: Student[]): Attendance[] {
 export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
+function migrateData(data: any): { houses: House[], wardens: Warden[], students: Student[], attendance: Attendance[] } {
+  // Migrate students: roll_no -> sr_no, room_no -> bed_no
+  const students = (data.students || []).map((s: any) => ({
+    ...s,
+    sr_no: s.sr_no || s.roll_no || '',
+    bed_no: s.bed_no || s.room_no || '',
+    photo_url: s.photo_url || '',
+  }));
+  
+  // Migrate attendance: add session field if missing
+  const attendance = (data.attendance || []).map((a: any) => ({
+    ...a,
+    session: a.session || 'Morning',
+  }));
+  
+  return {
+    houses: data.houses || [],
+    wardens: data.wardens || [],
+    students,
+    attendance,
+  };
+}
+
 export function getInitialData() {
   const houses = localStorage.getItem('hms_houses');
   if (!houses) {
@@ -108,12 +131,21 @@ export function getInitialData() {
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
     return { houses: seedHouses, wardens: seedWardens, students: seedStudents, attendance: seedAttendance };
   }
-  return {
-    houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
-    wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
-    students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
-    attendance: JSON.parse(localStorage.getItem('hms_attendance') || '[]') as Attendance[],
+  
+  const rawData = {
+    houses: JSON.parse(localStorage.getItem('hms_houses') || '[]'),
+    wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]'),
+    students: JSON.parse(localStorage.getItem('hms_students') || '[]'),
+    attendance: JSON.parse(localStorage.getItem('hms_attendance') || '[]'),
   };
+  
+  const migratedData = migrateData(rawData);
+  
+  // Save migrated data back to localStorage
+  localStorage.setItem('hms_students', JSON.stringify(migratedData.students));
+  localStorage.setItem('hms_attendance', JSON.stringify(migratedData.attendance));
+  
+  return migratedData;
 }
 
 export function saveToStorage(key: string, data: unknown) {
