@@ -13,11 +13,14 @@ export default function AdminDashboard() {
 
   const houseSummaries = useMemo(() => {
     return houses.filter((h: { status: string }) => h.status === 'Active').map((house: { id: string; house_name: string }) => {
-      const summary = getAttendanceSummary(house.id, today);
+      const morningSummary = getAttendanceSummary(house.id, today, 'Morning');
+      const nightSummary = getAttendanceSummary(house.id, today, 'Night');
       const warden = wardens.find((w: { assigned_house_id: string }) => w.assigned_house_id === house.id);
-      const attendanceCompleted = summary.present + summary.absent + summary.sick + summary.od + summary.staffWard > 0;
-      const percentage = summary.total > 0 ? ((summary.present / summary.total) * 100).toFixed(1) : '0.0';
-      return { ...house, ...summary, warden, attendanceCompleted, percentage };
+      const morningDone = morningSummary.present + morningSummary.absent + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
+      const nightDone = nightSummary.present + nightSummary.absent + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
+      const attendanceCompleted = morningDone && nightDone;
+      const percentage = morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0';
+      return { ...house, ...morningSummary, morningDone, nightDone, nightSummary, warden, attendanceCompleted, percentage };
     });
   }, [houses, attendance, students, today, wardens, getAttendanceSummary]);
 
@@ -170,7 +173,12 @@ export default function AdminDashboard() {
                   <td className="text-center px-3 py-3 text-purple-600 font-medium">{house.staffWard}</td>
                   <td className="text-center px-3 py-3 font-bold">{house.total}</td>
                   <td className="text-center px-3 py-3 font-medium">{house.percentage}%</td>
-                  <td className="text-center px-3 py-3">{house.attendanceCompleted ? <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-full text-xs"><CheckCircle2 className="w-3 h-3" /> Done</span> : <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-700 rounded-full text-xs"><Clock className="w-3 h-3" /> Pending</span>}</td>
+                  <td className="text-center px-3 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${(house as any).morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️M</span>
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${(house as any).nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙N</span>
+                    </div>
+                  </td>
                   <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</button></td>
                 </tr>
               ))}
@@ -198,7 +206,13 @@ export default function AdminDashboard() {
                 <div className="flex justify-between"><span className="text-gray-500">Staff Ward:</span><span className="font-medium text-purple-600">{house.staffWard}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Attendance:</span><span className="font-medium">{house.percentage}%</span></div>
               </div>
-              <div className="mt-3 pt-3 border-t"><p className="text-xs text-gray-500">Warden: <span className="font-medium text-gray-700">{house.warden?.name || 'Not Assigned'}</span></p></div>
+              <div className="mt-3 pt-3 border-t">
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${(house as any).morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {(house as any).morningDone ? '✓' : '⏳'}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${(house as any).nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 Night {(house as any).nightDone ? '✓' : '⏳'}</span>
+                </div>
+                <p className="text-xs text-gray-500">Warden: <span className="font-medium text-gray-700">{house.warden?.name || 'Not Assigned'}</span></p>
+              </div>
               <button onClick={() => navigate(`/admin/house/${house.id}`)} className="mt-3 w-full py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors">View Details</button>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { House, Warden, Student, Attendance } from '../types';
+import { House, Warden, Student, Attendance, AttendanceSession } from '../types';
 
 export const seedHouses: House[] = [
   { id: 'h1', house_name: 'Aravalli Sr Boys', category: 'Senior Boys', gender: 'Male', status: 'Active', created_at: '2024-01-01' },
@@ -44,7 +44,7 @@ function generateStudents(): Student[] {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const cls = house.category === 'Junior Boys' ? classes[Math.floor(Math.random() * 3)] : classes[Math.floor(Math.random() * classes.length)];
-      const roomNo = `${Math.floor(Math.random() * 5) + 1}${String(Math.floor(Math.random() * 9) + 1).padStart(2, '0')}`;
+      const bedNo = `B${String(Math.floor(Math.random() * 200) + 1).padStart(3, '0')}`;
       students.push({
         id: `s${id}`, admission_no: `ADM${String(2024000 + id).slice(-5)}`,
         student_name: `${firstName} ${lastName}`, gender: house.gender,
@@ -52,7 +52,7 @@ function generateStudents(): Student[] {
         dob: `${2008 + Math.floor(Math.random() * 6)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
         father_name: `Mr. ${firstName} ${lastName}`, mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
         mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-        house_id: house.id, room_no: roomNo, roll_no: String(i + 1).padStart(2, '0'),
+        house_id: house.id, bed_no: bedNo, sr_no: String(i + 1).padStart(2, '0'),
         photo_url: '', medical_remark: Math.random() > 0.9 ? 'Asthma' : '',
         status: 'Active', created_at: '2024-01-01', updated_at: '2024-01-01',
       });
@@ -71,21 +71,26 @@ function generateAttendance(students: Student[]): Attendance[] {
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
   }
+  const sessions: AttendanceSession[] = ['Morning', 'Night'];
+  
   students.forEach((student) => {
     dates.forEach((date) => {
-      const rand = Math.random();
-      let status: Attendance['status'];
-      if (rand < 0.82) status = 'Present';
-      else if (rand < 0.90) status = 'Absent';
-      else if (rand < 0.95) status = 'Sick';
-      else if (rand < 0.98) status = 'OD';
-      else status = 'Staff Ward';
-      attendance.push({
-        id: `a${id}`, student_id: student.id, house_id: student.house_id,
-        attendance_date: date, status, remark: '', marked_by: 'admin',
-        created_at: date, updated_at: date,
+      sessions.forEach((session) => {
+        const rand = Math.random();
+        let status: Attendance['status'];
+        if (rand < 0.85) status = 'Present';
+        else if (rand < 0.92) status = 'Absent';
+        else if (rand < 0.96) status = 'Sick';
+        else if (rand < 0.99) status = 'OD';
+        else status = 'Staff Ward';
+        
+        attendance.push({
+          id: `a${id}`, student_id: student.id, house_id: student.house_id,
+          attendance_date: date, session, status, remark: '', marked_by: 'admin',
+          created_at: date, updated_at: date,
+        });
+        id++;
       });
-      id++;
     });
   });
   return attendance;

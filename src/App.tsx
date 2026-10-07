@@ -26,12 +26,12 @@ function HouseDetailsPage() {
   const { houses, students, attendance, wardens, getAttendanceSummary } = useData();
   const params = useParams();
   const houseId = params.id || '';
-  const house = houses.find(h => h.id === houseId);
+  const house = houses.find((h: { id: string }) => h.id === houseId);
   const today = new Date().toISOString().split('T')[0];
-  const summary = getAttendanceSummary(houseId, today);
-  const houseStudents = students.filter(s => s.house_id === houseId && s.status === 'Active');
-  const warden = wardens.find(w => w.assigned_house_id === houseId);
-  const todayAttendance = attendance.filter(a => a.house_id === houseId && a.attendance_date === today);
+  const summary = getAttendanceSummary(houseId, today, 'Morning');
+  const houseStudents = students.filter((s: { house_id: string; status: string }) => s.house_id === houseId && s.status === 'Active');
+  const warden = wardens.find((w: { assigned_house_id: string }) => w.assigned_house_id === houseId);
+  const todayAttendance = attendance.filter((a: { house_id: string; attendance_date: string }) => a.house_id === houseId && a.attendance_date === today);
 
   if (!house) return <div className="text-center py-10 text-gray-500">House not found</div>;
 
@@ -67,22 +67,22 @@ function HouseDetailsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Roll</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Sr No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Class</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Room</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Bed No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Today's Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {houseStudents.map(student => {
-                const att = todayAttendance.find(a => a.student_id === student.id);
+                const att = todayAttendance.find((a: { student_id: string }) => a.student_id === student.id);
                 return (
                   <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">{student.roll_no}</td>
+                    <td className="px-4 py-3">{student.sr_no}</td>
                     <td className="px-4 py-3 font-medium">{student.student_name}</td>
                     <td className="px-4 py-3">{student.class}-{student.section}</td>
-                    <td className="px-4 py-3">{student.room_no}</td>
+                    <td className="px-4 py-3">{student.bed_no}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${att ? statusColors[att.status] : 'bg-gray-100 text-gray-500'}`}>
                         {att?.status || 'Not Marked'}

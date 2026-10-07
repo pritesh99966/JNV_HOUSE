@@ -39,7 +39,7 @@ export default function Reports() {
         return records.map((r: { student_id: string; house_id: string; status: string }) => {
           const student = students.find((s: { id: string }) => s.id === r.student_id);
           const house = houses.find((h: { id: string }) => h.id === r.house_id);
-          return { Name: student?.student_name || '', Class: student ? `${student.class}-${student.section}` : '', House: house?.house_name || '', Room: student?.room_no || '', Status: r.status };
+          return { Name: student?.student_name || '', Class: student ? `${student.class}-${student.section}` : '', House: house?.house_name || '', 'Bed No': student?.bed_no || '', Status: r.status };
         });
       }
       default: return [];
