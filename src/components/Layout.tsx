@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, ClipboardList, History, FileText, Settings, LogOut, Menu, X, ChevronDown, Building2, Shield, GraduationCap, Home } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, ClipboardList, History, FileText, Settings, LogOut, Menu, X, ChevronDown, Building2, Shield, GraduationCap, Home, BarChart3 } from 'lucide-react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -21,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/admin/attendance', icon: ClipboardList, label: 'Attendance' },
     { path: '/admin/attendance-history', icon: History, label: 'Attendance History' },
     { path: '/admin/reports', icon: FileText, label: 'Reports' },
+    { path: '/admin/student-report', icon: BarChart3, label: 'Student Report' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
   const wardenMenu = [
@@ -29,6 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/warden/attendance', icon: ClipboardList, label: 'Daily Attendance' },
     { path: '/warden/attendance-history', icon: History, label: 'Attendance History' },
     { path: '/warden/reports', icon: FileText, label: 'Reports' },
+    { path: '/warden/student-report', icon: BarChart3, label: 'Student Report' },
     { path: '/warden/profile', icon: Shield, label: 'My Profile' },
   ];
   const menu = isAdmin ? adminMenu : wardenMenu;

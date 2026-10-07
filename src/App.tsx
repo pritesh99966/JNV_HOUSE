@@ -12,6 +12,7 @@ import AttendanceHistory from './pages/AttendanceHistory';
 import Wardens from './pages/Wardens';
 import Houses from './pages/Houses';
 import Reports from './pages/Reports';
+import StudentMonthlyReport from './pages/StudentMonthlyReport';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -114,6 +115,7 @@ function AppRoutes() {
       <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
       <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
+      <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><StudentMonthlyReport /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
       <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetailsPage /></ProtectedRoute>} />
       
@@ -123,6 +125,7 @@ function AppRoutes() {
       <Route path="/warden/attendance" element={<ProtectedRoute requiredRole="warden"><Attendance /></ProtectedRoute>} />
       <Route path="/warden/attendance-history" element={<ProtectedRoute requiredRole="warden"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/warden/reports" element={<ProtectedRoute requiredRole="warden"><Reports /></ProtectedRoute>} />
+      <Route path="/warden/student-report" element={<ProtectedRoute requiredRole="warden"><StudentMonthlyReport /></ProtectedRoute>} />
       <Route path="/warden/profile" element={<ProtectedRoute requiredRole="warden"><Profile /></ProtectedRoute>} />
       
       <Route path="*" element={<Navigate to="/login" replace />} />
