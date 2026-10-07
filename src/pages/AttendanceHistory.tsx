@@ -28,13 +28,110 @@ export default function AttendanceHistory() {
   }, [attendance, students, filterDate, filterHouse, filterStatus, filterSession, search, isAdmin, assignedHouseId]);
 
   const exportToExcel = () => {
-    const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
-      const student = students.find((s: { id: string }) => s.id === a.student_id);
-      const house = houses.find((h: { id: string }) => h.id === a.house_id);
-      const warden = wardens.find((w: { id: string }) => w.id === a.marked_by);
-      return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Admission: student?.admission_no || '', Class: student?.class || '', 'Bed No': student?.bed_no || '', House: house?.house_name || '', Status: a.status, 'Marked By': warden?.name || a.marked_by };
-    });
-    const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Attendance'); XLSX.writeFile(wb, `attendance_${filterDate}.xlsx`);
+    if (filteredRecords.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    try {
+      const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
+        const student = students.find((s: { id: string }) => s.id === a.student_id);
+        const house = houses.find((h: { id: string }) => h.id === a.house_id);
+        const warden = wardens.find((w: { id: string }) => w.id === a.marked_by);
+        return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Admission: student?.admission_no || '', Class: student?.class || '', 'Bed No': student?.bed_no || '', House: house?.house_name || '', Status: a.status, 'Marked By': warden?.name || a.marked_by };
+      });
+      
+      const headers = Object.keys(data[0]);
+      let html = '<table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th>${h}</th>`; });
+      html += '</tr></thead><tbody>';
+      data.forEach((row: Record<string, string>) => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td>${row[h] || ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${filterDate}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    }
+  };
+
+  const handlePrint = () => {
+    if (filteredRecords.length === 0) {
+      alert('No data to print');
+      return;
+    }
+    try {
+      const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
+        const student = students.find((s: { id: string }) => s.id === a.student_id);
+        const house = houses.find((h: { id: string }) => h.id === a.house_id);
+        return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Class: student?.class || '', House: house?.house_name || '', Status: a.status };
+      });
+      
+      const headers = Object.keys(data[0]);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups to print reports');
+        return;
+      }
+      
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Attendance History - ${filterDate}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #4f46e5; margin-bottom: 10px; }
+            .meta { color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>Attendance History</h1>
+          <div class="meta">
+            <p>Date: ${filterDate}</p>
+            <p>Total Records: ${data.length}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${data.map((row: Record<string, string>) => 
+                `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    } catch (error) {
+      console.error('Print failed:', error);
+      alert('Print failed. Please try again.');
+    }
   };
 
   const statusColors: Record<string, string> = { Present: 'bg-green-100 text-green-700', Absent: 'bg-red-100 text-red-700', Sick: 'bg-yellow-100 text-yellow-700', OD: 'bg-blue-100 text-blue-700', 'Staff Ward': 'bg-purple-100 text-purple-700' };
@@ -46,7 +143,7 @@ export default function AttendanceHistory() {
         <div><h1 className="text-2xl font-bold text-gray-800">Attendance History</h1><p className="text-gray-500 text-sm">{filteredRecords.length} records</p></div>
         <div className="flex gap-2">
           <button onClick={exportToExcel} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Excel</button>
-          <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
         </div>
       </div>
 

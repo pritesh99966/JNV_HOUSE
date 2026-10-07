@@ -112,19 +112,50 @@ export default function Students() {
 
   // Excel Export
   const exportToExcel = () => {
-    const exportData = filteredStudents.map((s: Student) => {
-      const house = houses.find((h: { id: string }) => h.id === s.house_id);
-      return {
-        'Sr No': s.sr_no || '', 'Admission No': s.admission_no, 'Student Name': s.student_name,
-        'Gender': s.gender, 'Class': s.class, 'Section': s.section, 'DOB': s.dob,
-        'Father Name': s.father_name, 'Mother Name': s.mother_name, 'Mobile': s.mobile,
-        'House': house?.house_name || '', 'Bed No': s.bed_no || '', 'Medical Remark': s.medical_remark, 'Status': s.status
-      };
-    });
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Students');
-    XLSX.writeFile(wb, 'students_export.xlsx');
+    if (filteredStudents.length === 0) {
+      setToast({ type: 'error', message: 'No data to export' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+    try {
+      const exportData = filteredStudents.map((s: Student) => {
+        const house = houses.find((h: { id: string }) => h.id === s.house_id);
+        return {
+          'Sr No': s.sr_no || '', 'Admission No': s.admission_no, 'Student Name': s.student_name,
+          'Gender': s.gender, 'Class': s.class, 'Section': s.section, 'DOB': s.dob,
+          'Father Name': s.father_name, 'Mother Name': s.mother_name, 'Mobile': s.mobile,
+          'House': house?.house_name || '', 'Bed No': s.bed_no || '', 'Medical Remark': s.medical_remark, 'Status': s.status
+        };
+      });
+      
+      const headers = Object.keys(exportData[0]);
+      let html = '<table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th>${h}</th>`; });
+      html += '</tr></thead><tbody>';
+      exportData.forEach(row => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td>${(row as any)[h] || ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `students_export_${new Date().toISOString().split('T')[0]}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setToast({ type: 'success', message: 'Students exported successfully' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setToast({ type: 'error', message: 'Export failed. Please try again.' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   // Excel Import
@@ -175,16 +206,39 @@ export default function Students() {
 
   // Download template
   const downloadTemplate = () => {
-    const template = [{
-      'Sr No': '01', 'Admission No': 'ADM00001', 'Student Name': 'John Doe', 'Gender': 'Male',
-      'Class': '10', 'Section': 'A', 'DOB': '2008-05-15', 'Father Name': 'Mr. Robert Doe',
-      'Mother Name': 'Mrs. Jane Doe', 'Mobile': '9876543210', 'House': 'Aravalli Sr Boys',
-      'Bed No': 'B001', 'Medical Remark': '', 'Status': 'Active'
-    }];
-    const ws = XLSX.utils.json_to_sheet(template);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-    XLSX.writeFile(wb, 'student_import_template.xlsx');
+    try {
+      const template = [{
+        'Sr No': '01', 'Admission No': 'ADM00001', 'Student Name': 'John Doe', 'Gender': 'Male',
+        'Class': '10', 'Section': 'A', 'DOB': '2008-05-15', 'Father Name': 'Mr. Robert Doe',
+        'Mother Name': 'Mrs. Jane Doe', 'Mobile': '9876543210', 'House': 'Aravalli Sr Boys',
+        'Bed No': 'B001', 'Medical Remark': '', 'Status': 'Active'
+      }];
+      
+      const headers = Object.keys(template[0]);
+      let html = '<table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th>${h}</th>`; });
+      html += '</tr></thead><tbody>';
+      template.forEach(row => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td>${(row as any)[h] || ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'student_import_template.xls';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Template download failed:', error);
+      setToast({ type: 'error', message: 'Template download failed' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   const classes = ['6', '7', '8', '9', '10', '11', '12'];

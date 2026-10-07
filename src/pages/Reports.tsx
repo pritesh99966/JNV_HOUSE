@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Download, FileText, Printer } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 type ReportType = 'daily' | 'monthly' | 'house' | 'absent' | 'sick' | 'od' | 'staffward';
 
@@ -46,13 +45,133 @@ export default function Reports() {
     }
   }, [reportType, selectedDate, selectedHouse, selectedMonth, houses, students, attendance, isAdmin, assignedHouseId]);
 
-  const exportToExcel = () => { const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report'); XLSX.writeFile(wb, `${reportType}_report.xlsx`); };
+  const exportToExcel = () => {
+    if (reportData.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    try {
+      // Use simple HTML table to Excel conversion (more reliable)
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      let html = '<table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th>${h.replace(/([A-Z])/g, ' $1').trim()}</th>`; });
+      html += '</tr></thead><tbody>';
+      reportData.forEach((row: Record<string, unknown>) => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td>${row[h] || ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportType}_report_${new Date().toISOString().split('T')[0]}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      alert('Excel export failed. Please try CSV export instead.');
+    }
+  };
+
   const exportToCSV = () => {
-    if (reportData.length === 0) return;
-    const headers = Object.keys(reportData[0] as Record<string, unknown>);
-    const csv = [headers.join(','), ...reportData.map((row: Record<string, unknown>) => headers.map(h => `"${row[h]}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `${reportType}_report.csv`; a.click();
+    if (reportData.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    try {
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      // Add BOM for proper UTF-8 encoding in Excel
+      const BOM = '\uFEFF';
+      const csvContent = BOM + [
+        headers.join(','),
+        ...reportData.map((row: Record<string, unknown>) => 
+          headers.map(h => {
+            const value = String(row[h] || '').replace(/"/g, '""');
+            return `"${value}"`;
+          }).join(',')
+        )
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportType}_report_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('CSV export failed:', error);
+      alert('CSV export failed. Please try again.');
+    }
+  };
+
+  const handlePrint = () => {
+    if (reportData.length === 0) {
+      alert('No data to print');
+      return;
+    }
+    try {
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups to print reports');
+        return;
+      }
+      
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${reportTypes.find(r => r.value === reportType)?.label} - ${new Date().toLocaleDateString()}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #4f46e5; margin-bottom: 10px; }
+            .meta { color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>${reportTypes.find(r => r.value === reportType)?.label}</h1>
+          <div class="meta">
+            <p>Generated: ${new Date().toLocaleString()}</p>
+            <p>Total Records: ${reportData.length}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h.replace(/([A-Z])/g, ' $1').trim()}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${reportData.map((row: Record<string, unknown>) => 
+                `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    } catch (error) {
+      console.error('Print failed:', error);
+      alert('Print failed. Please try again.');
+    }
   };
 
   const reportTypes = [
@@ -68,7 +187,7 @@ export default function Reports() {
         <div className="flex gap-2">
           <button onClick={exportToExcel} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Excel</button>
           <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><Download className="w-4 h-4" /> CSV</button>
-          <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
         </div>
       </div>
 
