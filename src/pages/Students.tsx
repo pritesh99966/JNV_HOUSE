@@ -64,9 +64,30 @@ export default function Students() {
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Compress image before storing to save localStorage space
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, photo_url: reader.result as string });
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          // Resize to max 150x150 for thumbnail
+          const maxSize = 150;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
+          } else {
+            if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          // Convert to JPEG with 0.6 quality for smaller size
+          const compressed = canvas.toDataURL('image/jpeg', 0.6);
+          setFormData({ ...formData, photo_url: compressed });
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }

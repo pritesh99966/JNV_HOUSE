@@ -39,7 +39,7 @@ function generateStudents(): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 40 + Math.floor(Math.random() * 15);
+    const count = 25 + Math.floor(Math.random() * 10); // Reduced from 40-55 to 25-35 per house
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -66,7 +66,8 @@ function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
   const dates: string[] = [];
-  for (let d = 6; d >= 0; d--) {
+  // Reduced from 7 days to 3 days to save storage
+  for (let d = 2; d >= 0; d--) {
     const date = new Date();
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
@@ -141,13 +142,70 @@ export function getInitialData() {
   
   const migratedData = migrateData(rawData);
   
-  // Save migrated data back to localStorage
-  localStorage.setItem('hms_students', JSON.stringify(migratedData.students));
-  localStorage.setItem('hms_attendance', JSON.stringify(migratedData.attendance));
+  // Save migrated data back to localStorage with error handling
+  try {
+    localStorage.setItem('hms_students', JSON.stringify(migratedData.students));
+    localStorage.setItem('hms_attendance', JSON.stringify(migratedData.attendance));
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      console.warn('Storage quota exceeded during migration, clearing old data...');
+      // Clear all data and reinitialize with fresh seed data
+      localStorage.clear();
+      localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
+      localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
+      localStorage.setItem('hms_students', JSON.stringify(seedStudents));
+      localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
+      return { houses: seedHouses, wardens: seedWardens, students: seedStudents, attendance: seedAttendance };
+    }
+    throw e;
+  }
   
   return migratedData;
 }
 
+// Cleanup old attendance records (keep only last 30 days)
+function cleanupOldAttendance(attendance: Attendance[]): Attendance[] {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoffDate = thirtyDaysAgo.toISOString().split('T')[0];
+  
+  return attendance.filter(a => a.attendance_date >= cutoffDate);
+}
+
 export function saveToStorage(key: string, data: unknown) {
-  localStorage.setItem(`hms_${key}`, JSON.stringify(data));
+  try {
+    // Cleanup old attendance records before saving
+    if (key === 'attendance' && Array.isArray(data)) {
+      data = cleanupOldAttendance(data as Attendance[]);
+    }
+    
+    const serialized = JSON.stringify(data);
+    localStorage.setItem(`hms_${key}`, serialized);
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      console.warn('Storage quota exceeded, attempting cleanup...');
+      // Try to free up space by clearing old data
+      if (key === 'attendance') {
+        const current = JSON.parse(localStorage.getItem(`hms_${key}`) || '[]');
+        const cleaned = cleanupOldAttendance(current);
+        // Keep only last 7 days if still too large
+        if (cleaned.length > 1000) {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          const cutoff = sevenDaysAgo.toISOString().split('T')[0];
+          const minimal = cleaned.filter(a => a.attendance_date >= cutoff);
+          localStorage.setItem(`hms_${key}`, JSON.stringify(minimal));
+        } else {
+          localStorage.setItem(`hms_${key}`, JSON.stringify(cleaned));
+        }
+      } else if (key === 'students') {
+        // If students exceed quota, reduce photo data
+        const current = JSON.parse(localStorage.getItem(`hms_${key}`) || '[]');
+        const optimized = current.map((s: any) => ({ ...s, photo_url: '' }));
+        localStorage.setItem(`hms_${key}`, JSON.stringify(optimized));
+      }
+    } else {
+      throw e;
+    }
+  }
 }
