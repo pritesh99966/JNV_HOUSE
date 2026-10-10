@@ -128,25 +128,43 @@ export default function WardenDashboard() {
       </div>
 
       {/* Overall Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center mb-3"><UserCheck className="w-5 h-5" /></div>
-          <p className="text-2xl font-bold text-gray-800">{morningSummary.present}</p>
-          <p className="text-xs text-gray-500 mt-1">☀️ Morning Present</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3"><UserCheck className="w-5 h-5" /></div>
-          <p className="text-2xl font-bold text-gray-800">{nightSummary.present}</p>
-          <p className="text-xs text-gray-500 mt-1">🌙 Night Present</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="w-10 h-10 rounded-lg bg-red-50 text-red-700 flex items-center justify-center mb-3"><UserX className="w-5 h-5" /></div>
-          <p className="text-2xl font-bold text-gray-800">{morningSummary.absent + nightSummary.absent}</p>
-          <p className="text-xs text-gray-500 mt-1">Total Absent</p>
-        </div>
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white">
-          <p className="text-indigo-200 text-xs">Overall Attendance</p>
-          <p className="text-3xl font-bold mt-1">{percentage}%</p>
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          📊 Overall Summary
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
+            <p className="text-2xl font-bold text-orange-700">{morningSummary.present}</p>
+            <p className="text-xs text-gray-600 mt-1">☀️ Morning Present</p>
+          </div>
+          <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
+            <p className="text-2xl font-bold text-indigo-700">{nightSummary.present}</p>
+            <p className="text-xs text-gray-600 mt-1">🌙 Night Present</p>
+          </div>
+          <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+            <p className="text-2xl font-bold text-red-700">{morningSummary.absent + nightSummary.absent}</p>
+            <p className="text-xs text-gray-600 mt-1">Total Absent</p>
+          </div>
+          <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+            <p className="text-2xl font-bold text-yellow-700">{morningSummary.sick + nightSummary.sick}</p>
+            <p className="text-xs text-gray-600 mt-1">Total Sick</p>
+          </div>
+          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <p className="text-2xl font-bold text-blue-700">{morningSummary.od + nightSummary.od}</p>
+            <p className="text-xs text-gray-600 mt-1">Total On Duty</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+            <p className="text-2xl font-bold text-purple-700">{morningSummary.staffWard + nightSummary.staffWard}</p>
+            <p className="text-xs text-gray-600 mt-1">Total Staff Ward</p>
+          </div>
+          <div className="bg-gradient-to-br from-orange-400 to-yellow-400 rounded-lg p-3 text-white">
+            <p className="text-2xl font-bold">{morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+            <p className="text-xs mt-1">☀️ Morning %</p>
+          </div>
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg p-3 text-white">
+            <p className="text-2xl font-bold">{nightSummary.total > 0 ? ((nightSummary.present / nightSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+            <p className="text-xs mt-1">🌙 Night %</p>
+          </div>
         </div>
       </div>
     </div>
