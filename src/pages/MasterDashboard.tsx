@@ -17,7 +17,7 @@ export default function MasterDashboard() {
     admin_password: '',
     admin_name: '',
     admin_email: '',
-    status: 'Active' as 'Active' | 'Inactive'
+    status: 'Active' as 'Active' | 'Inactive' | 'Suspended'
   });
 
   const openAddForm = () => {

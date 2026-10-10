@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import MasterLogin from './pages/MasterLogin';
 import MasterDashboard from './pages/MasterDashboard';
+import LicenceManagement from './pages/LicenceManagement';
+import AuditLogs from './pages/AuditLogs';
 import AdminDashboard from './pages/AdminDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import Students from './pages/Students';
@@ -119,6 +121,8 @@ function AppRoutes() {
       
       {/* Master Routes */}
       <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
+      <Route path="/master/licences" element={<ProtectedRoute requiredRole="master"><LicenceManagement /></ProtectedRoute>} />
+      <Route path="/master/audit-logs" element={<ProtectedRoute requiredRole="master"><AuditLogs /></ProtectedRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />

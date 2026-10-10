@@ -72,7 +72,35 @@ export interface School {
   admin_name: string;
   admin_email: string;
   created_at: string;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Suspended';
+}
+
+export interface Licence {
+  id: string;
+  school_id: string;
+  plan: 'Basic' | 'Standard' | 'Premium';
+  start_date: string;
+  expiry_date: string;
+  student_limit: number;
+  status: 'Active' | 'Suspended' | 'Expired';
+  amount: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  school_id?: string;
+  school_name?: string;
+  action: string;
+  resource_type: string;
+  resource_id?: string;
+  details: string;
+  ip_address?: string;
 }
 
 export interface AuthUser {
@@ -84,4 +112,6 @@ export interface AuthUser {
   email?: string;
   school_id?: string;
   school_name?: string;
+  session_token?: string;
+  session_expiry?: string;
 }
