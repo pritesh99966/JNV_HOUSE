@@ -29,9 +29,38 @@ export default function Settings() {
 
       <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
         <h3 className="font-semibold text-gray-800 mb-4">Data Management</h3>
-        <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-          <div><p className="font-medium text-yellow-800">Reset All Data</p><p className="text-sm text-yellow-600">Clear all data and reload with seed data</p></div>
-          <button onClick={() => setShowResetConfirm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"><RefreshCw className="w-4 h-4" /> Reset</button>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div><p className="font-medium text-yellow-800">Reset All Data</p><p className="text-sm text-yellow-600">Clear all data and reload with seed data</p></div>
+            <button onClick={() => setShowResetConfirm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"><RefreshCw className="w-4 h-4" /> Reset</button>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div><p className="font-medium text-blue-800">Clear Old Attendance</p><p className="text-sm text-blue-600">Remove attendance records older than 7 days to free storage</p></div>
+            <button onClick={() => { 
+              const att = JSON.parse(localStorage.getItem('hms_attendance') || '[]');
+              const sevenDaysAgo = new Date();
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              const cutoff = sevenDaysAgo.toISOString().split('T')[0];
+              const filtered = att.filter((a: any) => a.attendance_date >= cutoff);
+              localStorage.setItem('hms_attendance', JSON.stringify(filtered));
+              alert(`Cleared ${att.length - filtered.length} old records. ${filtered.length} records remaining.`);
+            }} className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><RefreshCw className="w-4 h-4" /> Clear Old</button>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div><p className="font-medium text-gray-800">Storage Used</p><p className="text-sm text-gray-600">Approximate localStorage usage</p></div>
+            <div className="text-right">
+              <p className="font-bold text-gray-800">{(() => {
+                let total = 0;
+                for (let key in localStorage) {
+                  if (localStorage.hasOwnProperty(key) && key.startsWith('hms_')) {
+                    total += localStorage.getItem(key)?.length || 0;
+                  }
+                }
+                return (total / 1024).toFixed(1) + ' KB';
+              })()}</p>
+              <p className="text-xs text-gray-500">of ~5 MB limit</p>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import AttendanceHistory from './pages/AttendanceHistory';
 import Wardens from './pages/Wardens';
 import Houses from './pages/Houses';
 import Reports from './pages/Reports';
+import StudentMonthlyReport from './pages/StudentMonthlyReport';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -26,12 +27,12 @@ function HouseDetailsPage() {
   const { houses, students, attendance, wardens, getAttendanceSummary } = useData();
   const params = useParams();
   const houseId = params.id || '';
-  const house = houses.find(h => h.id === houseId);
+  const house = houses.find((h: { id: string }) => h.id === houseId);
   const today = new Date().toISOString().split('T')[0];
-  const summary = getAttendanceSummary(houseId, today);
-  const houseStudents = students.filter(s => s.house_id === houseId && s.status === 'Active');
-  const warden = wardens.find(w => w.assigned_house_id === houseId);
-  const todayAttendance = attendance.filter(a => a.house_id === houseId && a.attendance_date === today);
+  const summary = getAttendanceSummary(houseId, today, 'Morning');
+  const houseStudents = students.filter((s: { house_id: string; status: string }) => s.house_id === houseId && s.status === 'Active');
+  const warden = wardens.find((w: { assigned_house_id: string }) => w.assigned_house_id === houseId);
+  const todayAttendance = attendance.filter((a: { house_id: string; attendance_date: string }) => a.house_id === houseId && a.attendance_date === today);
 
   if (!house) return <div className="text-center py-10 text-gray-500">House not found</div>;
 
@@ -51,15 +52,15 @@ function HouseDetailsPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-gray-800">{summary.total}</p><p className="text-xs text-gray-500">Total</p></div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-green-600">{summary.present}</p><p className="text-xs text-gray-500">Present</p></div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-red-600">{summary.absent}</p><p className="text-xs text-gray-500">Absent</p></div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-yellow-600">{summary.sick}</p><p className="text-xs text-gray-500">Sick</p></div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-blue-600">{summary.od}</p><p className="text-xs text-gray-500">OD</p></div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border"><p className="text-2xl font-bold text-purple-600">{summary.staffWard}</p><p className="text-xs text-gray-500">Staff Ward</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-gray-800">{summary.total}</p><p className="text-xs text-gray-500">Total</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-green-600">{summary.present}</p><p className="text-xs text-gray-500">Present</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-red-600">{summary.absent}</p><p className="text-xs text-gray-500">Absent</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-yellow-600">{summary.sick}</p><p className="text-xs text-gray-500">Sick</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-blue-600">{summary.od}</p><p className="text-xs text-gray-500">OD</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"><p className="text-2xl font-bold text-purple-600">{summary.staffWard}</p><p className="text-xs text-gray-500">Staff Ward</p></div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b bg-gray-50">
           <h3 className="font-semibold text-gray-800">Students ({houseStudents.length})</h3>
         </div>
@@ -67,22 +68,22 @@ function HouseDetailsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Roll</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Sr No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Class</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Room</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Bed No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Today's Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {houseStudents.map(student => {
-                const att = todayAttendance.find(a => a.student_id === student.id);
+              {houseStudents.map((student: any) => {
+                const att = todayAttendance.find((a: { student_id: string }) => a.student_id === student.id);
                 return (
                   <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">{student.roll_no}</td>
+                    <td className="px-4 py-3">{student.sr_no || '-'}</td>
                     <td className="px-4 py-3 font-medium">{student.student_name}</td>
                     <td className="px-4 py-3">{student.class}-{student.section}</td>
-                    <td className="px-4 py-3">{student.room_no}</td>
+                    <td className="px-4 py-3">{student.bed_no || '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${att ? statusColors[att.status] : 'bg-gray-100 text-gray-500'}`}>
                         {att?.status || 'Not Marked'}
@@ -114,6 +115,7 @@ function AppRoutes() {
       <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
       <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
+      <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><StudentMonthlyReport /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
       <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetailsPage /></ProtectedRoute>} />
       
@@ -123,6 +125,7 @@ function AppRoutes() {
       <Route path="/warden/attendance" element={<ProtectedRoute requiredRole="warden"><Attendance /></ProtectedRoute>} />
       <Route path="/warden/attendance-history" element={<ProtectedRoute requiredRole="warden"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/warden/reports" element={<ProtectedRoute requiredRole="warden"><Reports /></ProtectedRoute>} />
+      <Route path="/warden/student-report" element={<ProtectedRoute requiredRole="warden"><StudentMonthlyReport /></ProtectedRoute>} />
       <Route path="/warden/profile" element={<ProtectedRoute requiredRole="warden"><Profile /></ProtectedRoute>} />
       
       <Route path="*" element={<Navigate to="/login" replace />} />

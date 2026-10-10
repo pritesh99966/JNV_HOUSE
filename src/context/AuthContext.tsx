@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('hms_current_user', JSON.stringify(adminUser));
       return { success: true, message: 'Login successful' };
     }
-    const warden = data.wardens.find((w: { username: string; email: string; password: string }) => (w.username === username || w.email === username) && w.password === password);
+    const warden = data.wardens.find((w: any) => (w.username === username || w.email === username) && w.password === password);
     if (warden) {
       if (warden.status !== 'Active') return { success: false, message: 'Account is deactivated. Contact admin.' };
       const wardenUser: AuthUser = { id: warden.id, name: warden.name, username: warden.username, role: 'warden' as UserRole, assigned_house_id: warden.assigned_house_id, email: warden.email };

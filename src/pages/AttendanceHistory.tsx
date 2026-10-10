@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Download, Printer } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 export default function AttendanceHistory() {
   const { user } = useAuth();
@@ -12,61 +11,129 @@ export default function AttendanceHistory() {
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterHouse, setFilterHouse] = useState(isAdmin ? '' : assignedHouseId);
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterSession, setFilterSession] = useState('');
   const [search, setSearch] = useState('');
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
 
   const filteredRecords = useMemo(() => {
-    return attendance.filter((a: { house_id: string; attendance_date: string; status: string; student_id: string }) => {
+    return attendance.filter((a: { house_id: string; attendance_date: string; status: string; student_id: string; session?: string }) => {
       if (!isAdmin && a.house_id !== assignedHouseId) return false;
       if (filterHouse && a.house_id !== filterHouse) return false;
       if (filterDate && a.attendance_date !== filterDate) return false;
       if (filterStatus && a.status !== filterStatus) return false;
+      if (filterSession && (a.session || 'Morning') !== filterSession) return false;
       if (search) { const student = students.find((s: { id: string; student_name: string }) => s.id === a.student_id); if (!student) return false; const q = search.toLowerCase(); return student.student_name.toLowerCase().includes(q); }
       return true;
-    }).sort((a: { attendance_date: string }, b: { attendance_date: string }) => b.attendance_date.localeCompare(a.attendance_date));
-  }, [attendance, students, filterDate, filterHouse, filterStatus, search, isAdmin, assignedHouseId]);
+    }).sort((a: { attendance_date: string }, b: { attendance_date: string }) => (b.attendance_date || '').localeCompare(a.attendance_date || ''));
+  }, [attendance, students, filterDate, filterHouse, filterStatus, filterSession, search, isAdmin, assignedHouseId]);
 
-  const exportToExcel = () => {
-    const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string }) => {
-      const student = students.find((s: { id: string }) => s.id === a.student_id);
-      const house = houses.find((h: { id: string }) => h.id === a.house_id);
-      return { Date: a.attendance_date, Student: student?.student_name || '', Admission: student?.admission_no || '', Class: student?.class || '', House: house?.house_name || '', Status: a.status };
-    });
-    const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Attendance'); XLSX.writeFile(wb, `attendance_${filterDate}.xlsx`);
+  const handleExport = () => {
+    if (filteredRecords.length === 0) { setToast({ type: 'error', message: 'No data to export' }); setTimeout(() => setToast(null), 3000); return; }
+    try {
+      const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
+        const student = students.find((s: { id: string }) => s.id === a.student_id);
+        const house = houses.find((h: { id: string }) => h.id === a.house_id);
+        const warden = wardens.find((w: { id: string }) => w.id === a.marked_by);
+        return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Admission: student?.admission_no || '', Class: student?.class || '', 'Bed No': student?.bed_no || '', House: house?.house_name || '', Status: a.status, 'Marked By': warden?.name || a.marked_by };
+      });
+      
+      const headers = Object.keys(data[0]);
+      let html = '<table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th>${h}</th>`; });
+      html += '</tr></thead><tbody>';
+      data.forEach((row: Record<string, string>) => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td>${row[h] || ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${filterDate}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setToast({ type: 'success', message: 'Exported successfully' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setToast({ type: 'error', message: 'Export failed' });
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const handlePrint = () => {
+    if (filteredRecords.length === 0) { setToast({ type: 'error', message: 'No data to print' }); setTimeout(() => setToast(null), 3000); return; }
+    try {
+      const data = filteredRecords.slice(0, 500).map((a: { attendance_date: string; student_id: string; house_id: string; status: string; marked_by: string; session?: string }) => {
+        const student = students.find((s: { id: string }) => s.id === a.student_id);
+        const house = houses.find((h: { id: string }) => h.id === a.house_id);
+        return { Date: a.attendance_date, Session: a.session || 'Morning', Student: student?.student_name || '', 'Sr No': student?.sr_no || '', Class: student?.class || '', House: house?.house_name || '', Status: a.status };
+      });
+      
+      const headers = Object.keys(data[0]);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) { setToast({ type: 'error', message: 'Please allow popups to print' }); setTimeout(() => setToast(null), 3000); return; }
+      
+      const html = `<!DOCTYPE html><html><head><title>Attendance History - ${filterDate}</title>
+      <style>body{font-family:Arial,sans-serif;padding:20px}h1{color:#4f46e5;margin-bottom:10px}.meta{color:#666;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f3f4f6;font-weight:bold}tr:nth-child(even){background-color:#f9fafb}@media print{body{padding:0}}</style>
+      </head><body><h1>Attendance History</h1><div class="meta"><p>Date: ${filterDate}</p><p>Total Records: ${data.length}</p></div>
+      <table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${data.map((row: Record<string, string>) => `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
+      
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
+    } catch (error) {
+      console.error('Print failed:', error);
+      setToast({ type: 'error', message: 'Print failed' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   const statusColors: Record<string, string> = { Present: 'bg-green-100 text-green-700', Absent: 'bg-red-100 text-red-700', Sick: 'bg-yellow-100 text-yellow-700', OD: 'bg-blue-100 text-blue-700', 'Staff Ward': 'bg-purple-100 text-purple-700' };
+  const sessionColors: Record<string, string> = { Morning: 'bg-orange-100 text-orange-700', Night: 'bg-indigo-100 text-indigo-700' };
 
   return (
     <div className="space-y-4">
+      {toast && <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>{toast.message}</div>}
+      
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold text-gray-800">Attendance History</h1><p className="text-gray-500 text-sm">{filteredRecords.length} records</p></div>
         <div className="flex gap-2">
-          <button onClick={exportToExcel} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Excel</button>
-          <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
+          <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Excel</button>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
         </div>
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Date</label><input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
           {isAdmin && <div><label className="block text-xs font-medium text-gray-600 mb-1">House</label><select value={filterHouse} onChange={e => setFilterHouse(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option>{houses.map((h: { id: string; house_name: string }) => <option key={h.id} value={h.id}>{h.house_name}</option>)}</select></div>}
+          <div><label className="block text-xs font-medium text-gray-600 mb-1">Session</label><select value={filterSession} onChange={e => setFilterSession(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option><option value="Morning">Morning</option><option value="Night">Night</option></select></div>
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Status</label><select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option><option value="Present">Present</option><option value="Absent">Absent</option><option value="Sick">Sick</option><option value="OD">OD</option><option value="Staff Ward">Staff Ward</option></select></div>
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Search</label><input type="text" placeholder="Name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
-          <div className="flex items-end"><button onClick={() => { setFilterDate(new Date().toISOString().split('T')[0]); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterStatus(''); setSearch(''); }} className="w-full px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button></div>
+          <div className="flex items-end"><button onClick={() => { setFilterDate(new Date().toISOString().split('T')[0]); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterStatus(''); setFilterSession(''); setSearch(''); }} className="w-full px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button></div>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50"><tr><th className="text-left px-4 py-3 font-medium text-gray-600">Date</th><th className="text-left px-4 py-3 font-medium text-gray-600">Student</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Adm No</th><th className="text-left px-4 py-3 font-medium text-gray-600">Class</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">House</th><th className="text-left px-4 py-3 font-medium text-gray-600">Status</th></tr></thead>
+            <thead className="bg-gray-50"><tr><th className="text-left px-4 py-3 font-medium text-gray-600">Date</th><th className="text-left px-4 py-3 font-medium text-gray-600">Session</th><th className="text-left px-4 py-3 font-medium text-gray-600">Student</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Adm No</th><th className="text-left px-4 py-3 font-medium text-gray-600">Class</th><th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">House</th><th className="text-left px-4 py-3 font-medium text-gray-600">Status</th></tr></thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredRecords.slice(0, 100).map((record: { id: string; attendance_date: string; student_id: string; house_id: string; status: string }) => {
+              {filteredRecords.slice(0, 100).map((record: { id: string; attendance_date: string; student_id: string; house_id: string; status: string; session?: string }) => {
                 const student = students.find((s: { id: string }) => s.id === record.student_id);
                 const house = houses.find((h: { id: string }) => h.id === record.house_id);
                 return (
                   <tr key={record.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-600">{record.attendance_date}</td>
+                    <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-medium ${sessionColors[record.session || 'Morning'] || ''}`}>{(record.session || 'Morning') === 'Morning' ? '☀️' : '🌙'} {record.session || 'Morning'}</span></td>
                     <td className="px-4 py-3 font-medium">{student?.student_name || 'Unknown'}</td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{student?.admission_no}</td>
                     <td className="px-4 py-3">{student?.class}-{student?.section}</td>

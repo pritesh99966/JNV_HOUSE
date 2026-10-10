@@ -1,4 +1,5 @@
 export type AttendanceStatus = 'Present' | 'Absent' | 'Sick' | 'OD' | 'Staff Ward';
+export type AttendanceSession = 'Morning' | 'Night';
 export type UserRole = 'admin' | 'warden';
 export type HouseCategory = 'Senior Boys' | 'Junior Boys' | 'Girls';
 export type Gender = 'Male' | 'Female';
@@ -40,8 +41,8 @@ export interface Student {
   mother_name: string;
   mobile: string;
   house_id: string;
-  room_no: string;
-  roll_no: string;
+  bed_no: string;
+  sr_no: string;
   photo_url: string;
   medical_remark: string;
   status: StudentStatus;
@@ -54,6 +55,7 @@ export interface Attendance {
   student_id: string;
   house_id: string;
   attendance_date: string;
+  session: AttendanceSession;
   status: AttendanceStatus;
   remark: string;
   marked_by: string;

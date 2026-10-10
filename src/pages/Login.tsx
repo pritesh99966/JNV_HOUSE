@@ -61,7 +61,6 @@ export default function Login() {
             <div className="space-y-1 text-xs text-gray-500">
               <p><span className="font-medium">Admin:</span> admin / admin123</p>
               <p><span className="font-medium">Warden:</span> aravalli_sr / warden123</p>
-              <p className="text-gray-400 mt-1">(Others: nilgiri_sr, shivalik_sr, udaygiri_sr, etc.)</p>
             </div>
           </div>
         </div>

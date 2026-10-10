@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Download, FileText, Printer } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 type ReportType = 'daily' | 'monthly' | 'house' | 'absent' | 'sick' | 'od' | 'staffward';
 
@@ -15,44 +14,223 @@ export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedHouse, setSelectedHouse] = useState(isAdmin ? '' : assignedHouseId);
   const [selectedMonth, setSelectedMonth] = useState(selectedDate.substring(0, 7));
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
 
   const reportData = useMemo(() => {
     switch (reportType) {
       case 'daily':
-        return houses.filter((h: { id: string; status: string }) => isAdmin || h.id === assignedHouseId ? h.status === 'Active' : false).map((house: { id: string; house_name: string }) => {
-          const records = attendance.filter((a: { house_id: string; attendance_date: string }) => a.house_id === house.id && a.attendance_date === selectedDate);
+        return houses.filter((h: { id: string; status: string }) => (isAdmin || h.id === assignedHouseId) && h.status === 'Active').map((house: { id: string; house_name: string }) => {
+          const allRecords = attendance.filter((a: { house_id: string; attendance_date: string }) => a.house_id === house.id && a.attendance_date === selectedDate);
+          const morningRecords = allRecords.filter((a: { session: string }) => a.session === 'Morning');
+          const nightRecords = allRecords.filter((a: { session: string }) => a.session === 'Night');
           const total = students.filter((s: { house_id: string; status: string }) => s.house_id === house.id && s.status === 'Active').length;
-          return { House: house.house_name, Total: total, Present: records.filter((r: { status: string }) => r.status === 'Present').length, Absent: records.filter((r: { status: string }) => r.status === 'Absent').length, Sick: records.filter((r: { status: string }) => r.status === 'Sick').length, OD: records.filter((r: { status: string }) => r.status === 'OD').length, StaffWard: records.filter((r: { status: string }) => r.status === 'Staff Ward').length };
+          return { 
+            House: house.house_name, 
+            Total: total,
+            'Morning Present': morningRecords.filter((r: { status: string }) => r.status === 'Present').length,
+            'Morning Absent': morningRecords.filter((r: { status: string }) => r.status === 'Absent').length,
+            'Night Present': nightRecords.filter((r: { status: string }) => r.status === 'Present').length,
+            'Night Absent': nightRecords.filter((r: { status: string }) => r.status === 'Absent').length,
+            'Total Present': allRecords.filter((r: { status: string }) => r.status === 'Present').length,
+            'Total Absent': allRecords.filter((r: { status: string }) => r.status === 'Absent').length,
+            'Total Sick': allRecords.filter((r: { status: string }) => r.status === 'Sick').length,
+            'Total OD': allRecords.filter((r: { status: string }) => r.status === 'OD').length,
+            'Total Staff Ward': allRecords.filter((r: { status: string }) => r.status === 'Staff Ward').length,
+          };
         });
       case 'monthly': {
         const hs = students.filter((s: { house_id: string; status: string }) => (isAdmin || s.house_id === assignedHouseId) && s.status === 'Active' && (!selectedHouse || s.house_id === selectedHouse));
         return hs.map((student: { id: string; student_name: string; admission_no: string; class: string; section: string; house_id: string }) => {
           const monthRecords = attendance.filter((a: { student_id: string; attendance_date: string }) => a.student_id === student.id && a.attendance_date.startsWith(selectedMonth));
+          const morningRecords = monthRecords.filter((a: { session: string }) => a.session === 'Morning');
+          const nightRecords = monthRecords.filter((a: { session: string }) => a.session === 'Night');
           const house = houses.find((h: { id: string }) => h.id === student.house_id);
-          return { Name: student.student_name, Admission: student.admission_no, Class: `${student.class}-${student.section}`, House: house?.house_name || '', Present: monthRecords.filter((r: { status: string }) => r.status === 'Present').length, Absent: monthRecords.filter((r: { status: string }) => r.status === 'Absent').length, Total: monthRecords.length };
+          const present = monthRecords.filter((r: { status: string }) => r.status === 'Present').length;
+          const absent = monthRecords.filter((r: { status: string }) => r.status === 'Absent').length;
+          const sick = monthRecords.filter((r: { status: string }) => r.status === 'Sick').length;
+          const od = monthRecords.filter((r: { status: string }) => r.status === 'OD').length;
+          const sw = monthRecords.filter((r: { status: string }) => r.status === 'Staff Ward').length;
+          const leaveDays = ((sick + od + sw) / 2).toFixed(1);
+          const percentage = monthRecords.length > 0 ? ((present / monthRecords.length) * 100).toFixed(1) : '0.0';
+          return { 
+            Name: student.student_name, 
+            Admission: student.admission_no, 
+            Class: `${student.class}-${student.section}`, 
+            House: house?.house_name || '', 
+            'Morning Present': morningRecords.filter((r: { status: string }) => r.status === 'Present').length,
+            'Morning Absent': morningRecords.filter((r: { status: string }) => r.status === 'Absent').length,
+            'Night Present': nightRecords.filter((r: { status: string }) => r.status === 'Present').length,
+            'Night Absent': nightRecords.filter((r: { status: string }) => r.status === 'Absent').length,
+            'Total Present': present,
+            'Total Absent': absent,
+            'Total Sick': sick,
+            'Total OD': od,
+            'Total Staff Ward': sw,
+            'Leave Days': leaveDays,
+            'Attendance %': percentage,
+          };
         });
       }
       case 'absent': case 'sick': case 'od': case 'staffward': {
         const statusMap: Record<string, string> = { absent: 'Absent', sick: 'Sick', od: 'OD', staffward: 'Staff Ward' };
         const targetStatus = statusMap[reportType];
         const records = attendance.filter((a: { attendance_date: string; status: string; house_id: string }) => a.attendance_date === selectedDate && a.status === targetStatus && (isAdmin || a.house_id === assignedHouseId) && (!selectedHouse || a.house_id === selectedHouse));
-        return records.map((r: { student_id: string; house_id: string; status: string }) => {
+        return records.map((r: { student_id: string; house_id: string; status: string; session: string }) => {
           const student = students.find((s: { id: string }) => s.id === r.student_id);
           const house = houses.find((h: { id: string }) => h.id === r.house_id);
-          return { Name: student?.student_name || '', Class: student ? `${student.class}-${student.section}` : '', House: house?.house_name || '', Room: student?.room_no || '', Status: r.status };
+          return { 
+            Name: student?.student_name || '', 
+            'Sr No': student?.sr_no || '',
+            Class: student ? `${student.class}-${student.section}` : '', 
+            House: house?.house_name || '', 
+            'Bed No': student?.bed_no || '', 
+            Session: r.session || 'Morning',
+            Status: r.status 
+          };
         });
       }
       default: return [];
     }
   }, [reportType, selectedDate, selectedHouse, selectedMonth, houses, students, attendance, isAdmin, assignedHouseId]);
 
-  const exportToExcel = () => { const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report'); XLSX.writeFile(wb, `${reportType}_report.xlsx`); };
+  const showToast = (type: string, message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const exportToExcel = () => {
+    if (reportData.length === 0) {
+      showToast('error', 'No data to export');
+      return;
+    }
+    try {
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><table border="1"><thead><tr>';
+      headers.forEach(h => { html += `<th style="background-color:#4f46e5;color:white;padding:8px;font-weight:bold;">${h.replace(/([A-Z])/g, ' $1').trim()}</th>`; });
+      html += '</tr></thead><tbody>';
+      reportData.forEach((row: Record<string, unknown>) => {
+        html += '<tr>';
+        headers.forEach(h => { html += `<td style="padding:6px;">${row[h] ?? ''}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table></body></html>';
+      
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${reportType}_report_${new Date().toISOString().split('T')[0]}.xls`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+      showToast('success', `Excel file exported successfully (${reportData.length} records)`);
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      showToast('error', 'Excel export failed. Please try CSV export instead.');
+    }
+  };
+
   const exportToCSV = () => {
-    if (reportData.length === 0) return;
-    const headers = Object.keys(reportData[0] as Record<string, unknown>);
-    const csv = [headers.join(','), ...reportData.map((row: Record<string, unknown>) => headers.map(h => `"${row[h]}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `${reportType}_report.csv`; a.click();
+    if (reportData.length === 0) {
+      showToast('error', 'No data to export');
+      return;
+    }
+    try {
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      const BOM = '\uFEFF';
+      const csvContent = BOM + [
+        headers.map(h => `"${h.replace(/([A-Z])/g, ' $1').trim()}"`).join(','),
+        ...reportData.map((row: Record<string, unknown>) => 
+          headers.map(h => {
+            const value = String(row[h] ?? '').replace(/"/g, '""');
+            return `"${value}"`;
+          }).join(',')
+        )
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${reportType}_report_${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+      showToast('success', `CSV file exported successfully (${reportData.length} records)`);
+    } catch (error) {
+      console.error('CSV export failed:', error);
+      showToast('error', 'CSV export failed. Please try again.');
+    }
+  };
+
+  const handlePrint = () => {
+    if (reportData.length === 0) {
+      showToast('error', 'No data to print');
+      return;
+    }
+    try {
+      const headers = Object.keys(reportData[0] as Record<string, unknown>);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showToast('error', 'Please allow popups to print reports');
+        return;
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${reportTypes.find(r => r.value === reportType)?.label} - ${new Date().toLocaleDateString()}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #4f46e5; margin-bottom: 10px; }
+            .meta { color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>${reportTypes.find(r => r.value === reportType)?.label}</h1>
+          <div class="meta">
+            <p>Generated: ${new Date().toLocaleString()}</p>
+            <p>Total Records: ${reportData.length}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h.replace(/([A-Z])/g, ' $1').trim()}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${reportData.map((row: Record<string, unknown>) =>
+                `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    } catch (error) {
+      console.error('Print failed:', error);
+      showToast('error', 'Print failed. Please try again.');
+    }
   };
 
   const reportTypes = [
@@ -63,12 +241,17 @@ export default function Reports() {
 
   return (
     <div className="space-y-4">
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold text-gray-800">Reports</h1><p className="text-gray-500 text-sm">Generate and export reports</p></div>
         <div className="flex gap-2">
           <button onClick={exportToExcel} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Excel</button>
           <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"><Download className="w-4 h-4" /> CSV</button>
-          <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
         </div>
       </div>
 
