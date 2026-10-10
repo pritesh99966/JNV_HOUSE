@@ -31,7 +31,7 @@ export default function WardenDashboard() {
         <div className="flex items-center gap-2">
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {morningDone ? '✓' : '⏳'}</span>
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 Night {nightDone ? '✓' : '⏳'}</span>
-          <button onClick={() => navigate('/warden/attendance?session=Morning')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Mark Attendance</button>
+          <button onClick={() => navigate('/warden/attendance', { state: { session: 'Morning' } })} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Mark Attendance</button>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export default function WardenDashboard() {
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
             {morningDone ? '✓ Completed' : '⏳ Pending'}
           </span>
-          <button onClick={() => navigate('/warden/attendance?session=Morning')} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+          <button onClick={() => navigate('/warden/attendance', { state: { session: 'Morning' } })} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
             Mark Morning Attendance →
           </button>
         </div>
@@ -122,7 +122,7 @@ export default function WardenDashboard() {
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${nightDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
             {nightDone ? '✓ Completed' : '⏳ Pending'}
           </span>
-          <button onClick={() => navigate('/warden/attendance?session=Night')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+          <button onClick={() => navigate('/warden/attendance', { state: { session: 'Night' } })} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
             Mark Night Attendance →
           </button>
         </div>

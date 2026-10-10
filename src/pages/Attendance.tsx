@@ -3,7 +3,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Student, AttendanceStatus, AttendanceSession } from '../types';
 import { Save, RotateCcw, CheckCheck, AlertCircle, Sun, Moon } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const STATUS_OPTIONS: AttendanceStatus[] = ['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'];
 const STATUS_COLORS: Record<string, string> = { Present: 'bg-green-100 text-green-700 border-green-300', Absent: 'bg-red-100 text-red-700 border-red-300', Sick: 'bg-yellow-100 text-yellow-700 border-yellow-300', OD: 'bg-blue-100 text-blue-700 border-blue-300', 'Staff Ward': 'bg-purple-100 text-purple-700 border-purple-300' };
@@ -11,13 +11,13 @@ const STATUS_COLORS: Record<string, string> = { Present: 'bg-green-100 text-gree
 export default function Attendance() {
   const { user } = useAuth();
   const { houses, students, attendance, bulkSaveAttendance, getAttendanceForDate } = useData();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const isAdmin = user?.role === 'admin';
   const assignedHouseId = user?.assigned_house_id || '';
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedHouse, setSelectedHouse] = useState(isAdmin ? (houses[0]?.id || '') : assignedHouseId);
   const [selectedSession, setSelectedSession] = useState<AttendanceSession>(
-    (searchParams.get('session') === 'Night' ? 'Night' : 'Morning') as AttendanceSession
+    ((location.state as any)?.session === 'Night' ? 'Night' : 'Morning') as AttendanceSession
   );
   const [search, setSearch] = useState('');
   const [filterClass, setFilterClass] = useState('');
