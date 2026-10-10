@@ -176,11 +176,21 @@ export const seedAttendance = generateAttendance(seedStudents);
 export function getInitialData() {
   const schools = localStorage.getItem('hms_schools');
   if (!schools) {
+    // First time initialization
     localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
     localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
+    
+    // Initialize school-specific data for each school
+    seedSchools.forEach(school => {
+      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
+      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
+      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
+      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
+    });
+    
     return { 
       schools: seedSchools,
       houses: seedHouses, 
@@ -189,8 +199,20 @@ export function getInitialData() {
       attendance: seedAttendance 
     };
   }
+  
+  // Check if school-specific data exists, if not initialize it
+  const schoolsList = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
+  schoolsList.forEach(school => {
+    if (!localStorage.getItem(`hms_${school.id}_houses`)) {
+      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
+      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
+      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
+      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
+    }
+  });
+  
   return {
-    schools: JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[],
+    schools: schoolsList,
     houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
     wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
     students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
@@ -202,10 +224,28 @@ export function getSchoolData(schoolId: string) {
   const allSchools = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
   const school = allSchools.find(s => s.id === schoolId);
   
-  const schoolHouses = JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[];
-  const schoolWardens = JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[];
-  const schoolStudents = JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[];
-  const schoolAttendance = JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[];
+  let schoolHouses = JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[];
+  let schoolWardens = JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[];
+  let schoolStudents = JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[];
+  let schoolAttendance = JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[];
+  
+  // Fallback: If school-specific data is empty, use default seed data
+  if (schoolHouses.length === 0) {
+    schoolHouses = seedHouses;
+    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
+  }
+  if (schoolWardens.length === 0) {
+    schoolWardens = seedWardens;
+    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
+  }
+  if (schoolStudents.length === 0) {
+    schoolStudents = seedStudents;
+    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
+  }
+  if (schoolAttendance.length === 0) {
+    schoolAttendance = seedAttendance;
+    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
+  }
   
   return {
     school,
