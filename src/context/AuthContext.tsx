@@ -21,20 +21,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (username: string, password: string) => {
     const data = getInitialData();
-    if (username === 'admin' && password === 'admin123') {
-      const adminUser: AuthUser = { id: 'admin', name: 'Super Admin', username: 'admin', role: 'admin' as UserRole, email: 'admin@school.com' };
-      setUser(adminUser);
-      localStorage.setItem('hms_current_user', JSON.stringify(adminUser));
-      return { success: true, message: 'Login successful' };
+    
+    // Master Admin Login
+    if (username === 'master' && password === 'master123') {
+      const masterUser: AuthUser = { 
+        id: 'master', 
+        name: 'Master Admin', 
+        username: 'master', 
+        role: 'master', 
+        email: 'master@system.com' 
+      };
+      setUser(masterUser);
+      localStorage.setItem('hms_current_user', JSON.stringify(masterUser));
+      return { success: true, message: 'Master login successful' };
     }
-    const warden = data.wardens.find((w: any) => (w.username === username || w.email === username) && w.password === password);
-    if (warden) {
-      if (warden.status !== 'Active') return { success: false, message: 'Account is deactivated. Contact admin.' };
-      const wardenUser: AuthUser = { id: warden.id, name: warden.name, username: warden.username, role: 'warden' as UserRole, assigned_house_id: warden.assigned_house_id, email: warden.email };
-      setUser(wardenUser);
-      localStorage.setItem('hms_current_user', JSON.stringify(wardenUser));
-      return { success: true, message: 'Login successful' };
+    
+    // School Admin Login
+    const school = data.schools.find((s: any) => 
+      (s.admin_username === username || s.admin_email === username) && 
+      s.admin_password === password && 
+      s.status === 'Active'
+    );
+    
+    if (school) {
+      const schoolAdminUser: AuthUser = { 
+        id: school.id, 
+        name: school.admin_name, 
+        username: school.admin_username, 
+        role: 'admin', 
+        email: school.admin_email,
+        school_id: school.id,
+        school_name: school.name
+      };
+      setUser(schoolAdminUser);
+      localStorage.setItem('hms_current_user', JSON.stringify(schoolAdminUser));
+      return { success: true, message: 'School admin login successful' };
     }
+    
+    // Warden Login - Search across all schools
+    for (const school of data.schools) {
+      const schoolWardens = JSON.parse(localStorage.getItem(`hms_${school.id}_wardens`) || '[]');
+      const warden = schoolWardens.find((w: any) => 
+        (w.username === username || w.email === username) && 
+        w.password === password
+      );
+      
+      if (warden) {
+        if (warden.status !== 'Active') {
+          return { success: false, message: 'Account is deactivated. Contact admin.' };
+        }
+        
+        const wardenUser: AuthUser = { 
+          id: warden.id, 
+          name: warden.name, 
+          username: warden.username, 
+          role: 'warden', 
+          assigned_house_id: warden.assigned_house_id, 
+          email: warden.email,
+          school_id: school.id,
+          school_name: school.name
+        };
+        setUser(wardenUser);
+        localStorage.setItem('hms_current_user', JSON.stringify(wardenUser));
+        return { success: true, message: 'Warden login successful' };
+      }
+    }
+    
     return { success: false, message: 'Invalid username or password' };
   };
 

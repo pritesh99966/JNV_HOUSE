@@ -20,7 +20,13 @@ export default function Login() {
       const result = login(username, password);
       if (result.success) {
         const u = JSON.parse(localStorage.getItem('hms_current_user') || '{}');
-        navigate(u.role === 'admin' ? '/admin' : '/warden');
+        if (u.role === 'master') {
+          navigate('/master');
+        } else if (u.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/warden');
+        }
       } else { setError(result.message); }
       setLoading(false);
     }, 500);
@@ -59,9 +65,17 @@ export default function Login() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs font-semibold text-gray-600 mb-2">Demo Credentials:</p>
             <div className="space-y-1 text-xs text-gray-500">
-              <p><span className="font-medium">Admin:</span> admin / admin123</p>
+              <p><span className="font-medium">School Admin:</span> kv001 / kv001@123</p>
               <p><span className="font-medium">Warden:</span> aravalli_sr / warden123</p>
             </div>
+          </div>
+          <div className="mt-4 text-center">
+            <button 
+              onClick={() => navigate('/master-login')} 
+              className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors"
+            >
+              🔐 Master Admin Login →
+            </button>
           </div>
         </div>
       </div>

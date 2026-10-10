@@ -1,4 +1,62 @@
-import { House, Warden, Student, Attendance, AttendanceSession } from '../types';
+import { House, Warden, Student, Attendance, AttendanceSession, School } from '../types';
+
+export const seedSchools: School[] = [
+  {
+    id: 'school1',
+    name: 'Kendriya Vidyalaya No. 1',
+    code: 'KV001',
+    admin_username: 'kv001',
+    admin_password: 'kv001@123',
+    admin_name: 'Rajesh Kumar',
+    admin_email: 'kv001@school.com',
+    created_at: '2024-01-01',
+    status: 'Active'
+  },
+  {
+    id: 'school2',
+    name: 'Kendriya Vidyalaya No. 2',
+    code: 'KV002',
+    admin_username: 'kv002',
+    admin_password: 'kv002@123',
+    admin_name: 'Suresh Patel',
+    admin_email: 'kv002@school.com',
+    created_at: '2024-01-01',
+    status: 'Active'
+  },
+  {
+    id: 'school3',
+    name: 'Delhi Public School',
+    code: 'DPS001',
+    admin_username: 'dps001',
+    admin_password: 'dps001@123',
+    admin_name: 'Amit Sharma',
+    admin_email: 'dps001@school.com',
+    created_at: '2024-01-15',
+    status: 'Active'
+  },
+  {
+    id: 'school4',
+    name: 'Ryan International School',
+    code: 'RIS001',
+    admin_username: 'ris001',
+    admin_password: 'ris001@123',
+    admin_name: 'Priya Singh',
+    admin_email: 'ris001@school.com',
+    created_at: '2024-02-01',
+    status: 'Active'
+  },
+  {
+    id: 'school5',
+    name: 'DAV Public School',
+    code: 'DAV001',
+    admin_username: 'dav001',
+    admin_password: 'dav001@123',
+    admin_name: 'Vikram Patel',
+    admin_email: 'dav001@school.com',
+    created_at: '2024-02-15',
+    status: 'Active'
+  }
+];
 
 export const seedHouses: House[] = [
   { id: 'h1', house_name: 'Aravalli Sr Boys', category: 'Senior Boys', gender: 'Male', status: 'Active', created_at: '2024-01-01' },
@@ -30,21 +88,23 @@ export const seedWardens: Warden[] = [
   { id: 'w12', name: 'Anita Verma', username: 'udaygiri_girls', email: 'udaygiri_girls@school.com', mobile: '9876543212', password: 'warden123', assigned_house_id: 'h12', status: 'Active', photo_url: '', created_at: '2024-01-01' },
 ];
 
-const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati'];
-const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi', 'Reddy', 'Shah', 'Mehta'];
+const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati', 'Karan', 'Ritika', 'Aditya', 'Shruti', 'Vishal', 'Megha', 'Akash', 'Pallavi', 'Nitin', 'Kavita', 'Sachin', 'Poonam', 'Harsh', 'Nidhi', 'Varun', 'Tanya', 'Abhishek', 'Simran', 'Rohan', 'Isha'];
+const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi', 'Reddy', 'Shah', 'Mehta', 'Agarwal', 'Tiwari', 'Dubey', 'Mishra', 'Chauhan', 'Yadav', 'Pandey', 'Saxena', 'Srivastava', 'Malhotra'];
 const classes = ['6', '7', '8', '9', '10', '11', '12'];
 const sections = ['A', 'B', 'C'];
+const medicalConditions = ['', '', '', '', '', 'Asthma', 'Allergies', 'Diabetes', '', ''];
 
 function generateStudents(): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 20;
+    const count = 35; // Increased from 20 to 35 students per house
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const cls = house.category === 'Junior Boys' ? classes[Math.floor(Math.random() * 3)] : classes[Math.floor(Math.random() * classes.length)];
       const bedNo = `B${String(Math.floor(Math.random() * 200) + 1).padStart(3, '0')}`;
+      const medical = medicalConditions[Math.floor(Math.random() * medicalConditions.length)];
       students.push({
         id: `s${id}`, admission_no: `ADM${String(2024000 + id).slice(-5)}`,
         student_name: `${firstName} ${lastName}`, gender: house.gender,
@@ -53,7 +113,7 @@ function generateStudents(): Student[] {
         father_name: `Mr. ${firstName} ${lastName}`, mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
         mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
         house_id: house.id, bed_no: bedNo, sr_no: String(i + 1).padStart(2, '0'),
-        photo_url: '', medical_remark: '',
+        photo_url: '', medical_remark: medical,
         status: 'Active', created_at: '2024-01-01', updated_at: '2024-01-01',
       });
       id++;
@@ -66,7 +126,8 @@ function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
   const dates: string[] = [];
-  for (let d = 2; d >= 0; d--) {
+  // Generate attendance for last 7 days
+  for (let d = 6; d >= 0; d--) {
     const date = new Date();
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
@@ -78,15 +139,28 @@ function generateAttendance(students: Student[]): Attendance[] {
       sessions.forEach((session) => {
         const rand = Math.random();
         let status: Attendance['status'];
-        if (rand < 0.85) status = 'Present';
-        else if (rand < 0.92) status = 'Absent';
-        else if (rand < 0.96) status = 'Sick';
-        else if (rand < 0.99) status = 'OD';
-        else status = 'Staff Ward';
+        let remark = '';
+        
+        // More realistic attendance distribution
+        if (rand < 0.82) {
+          status = 'Present';
+        } else if (rand < 0.90) {
+          status = 'Absent';
+          remark = 'Absent without leave';
+        } else if (rand < 0.95) {
+          status = 'Sick';
+          remark = 'Medical leave';
+        } else if (rand < 0.98) {
+          status = 'OD';
+          remark = 'On duty - Sports/Competition';
+        } else {
+          status = 'Staff Ward';
+          remark = 'Under medical supervision';
+        }
         
         attendance.push({
           id: `a${id}`, student_id: student.id, house_id: student.house_id,
-          attendance_date: date, session, status, remark: '', marked_by: 'admin',
+          attendance_date: date, session, status, remark, marked_by: 'admin',
           created_at: date, updated_at: date,
         });
         id++;
@@ -100,20 +174,93 @@ export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
 export function getInitialData() {
-  const houses = localStorage.getItem('hms_houses');
-  if (!houses) {
+  const schools = localStorage.getItem('hms_schools');
+  if (!schools) {
+    // First time initialization
+    localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
     localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
-    return { houses: seedHouses, wardens: seedWardens, students: seedStudents, attendance: seedAttendance };
+    
+    // Initialize school-specific data for each school
+    seedSchools.forEach(school => {
+      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
+      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
+      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
+      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
+    });
+    
+    return { 
+      schools: seedSchools,
+      houses: seedHouses, 
+      wardens: seedWardens, 
+      students: seedStudents, 
+      attendance: seedAttendance 
+    };
   }
+  
+  // Check if school-specific data exists, if not initialize it
+  const schoolsList = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
+  schoolsList.forEach(school => {
+    if (!localStorage.getItem(`hms_${school.id}_houses`)) {
+      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
+      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
+      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
+      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
+    }
+  });
+  
   return {
+    schools: schoolsList,
     houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
     wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
     students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
     attendance: JSON.parse(localStorage.getItem('hms_attendance') || '[]') as Attendance[],
   };
+}
+
+export function getSchoolData(schoolId: string) {
+  const allSchools = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
+  const school = allSchools.find(s => s.id === schoolId);
+  
+  let schoolHouses = JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[];
+  let schoolWardens = JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[];
+  let schoolStudents = JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[];
+  let schoolAttendance = JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[];
+  
+  // Fallback: If school-specific data is empty, use default seed data
+  if (schoolHouses.length === 0) {
+    schoolHouses = seedHouses;
+    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
+  }
+  if (schoolWardens.length === 0) {
+    schoolWardens = seedWardens;
+    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
+  }
+  if (schoolStudents.length === 0) {
+    schoolStudents = seedStudents;
+    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
+  }
+  if (schoolAttendance.length === 0) {
+    schoolAttendance = seedAttendance;
+    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
+  }
+  
+  return {
+    school,
+    houses: schoolHouses,
+    wardens: schoolWardens,
+    students: schoolStudents,
+    attendance: schoolAttendance
+  };
+}
+
+export function saveSchoolData(schoolId: string, data: any) {
+  if (data.houses) localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(data.houses));
+  if (data.wardens) localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(data.wardens));
+  if (data.students) localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(data.students));
+  if (data.attendance) localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(data.attendance));
 }
 
 export function saveToStorage(key: string, data: any) {

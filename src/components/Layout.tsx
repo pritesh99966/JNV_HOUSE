@@ -45,7 +45,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between p-4 border-b border-indigo-700">
           <div className="flex items-center gap-2">
             <GraduationCap className="w-8 h-8 text-yellow-400" />
-            <div><h1 className="text-sm font-bold">Hostel Management</h1><p className="text-xs text-indigo-300">Attendance System</p></div>
+            <div>
+              <h1 className="text-sm font-bold">Hostel Management</h1>
+              {user?.school_name && <p className="text-xs text-yellow-300">{user.school_name}</p>}
+              <p className="text-xs text-indigo-300">Attendance System</p>
+            </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white"><X className="w-5 h-5" /></button>
         </div>
@@ -76,7 +80,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-600"><Menu className="w-6 h-6" /></button>
             <div className="flex items-center gap-2">
               <Home className="w-5 h-5 text-indigo-600" />
-              <span className="text-sm text-gray-600 hidden sm:inline">{isAdmin ? 'Super Admin Panel' : `${assignedHouse?.house_name || 'Warden'} Panel`}</span>
+              <span className="text-sm text-gray-600 hidden sm:inline">
+                {user?.school_name ? `${user.school_name} - ` : ''}
+                {isAdmin ? 'School Admin Panel' : `${assignedHouse?.house_name || 'Warden'} Panel`}
+              </span>
             </div>
             <div className="relative">
               <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -86,7 +93,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </button>
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 z-50">
-                  <div className="px-4 py-2 border-b"><p className="text-sm font-medium">{user?.name}</p><p className="text-xs text-gray-500">{user?.email || user?.username}</p></div>
+                  <div className="px-4 py-2 border-b">
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-xs text-gray-500">{user?.email || user?.username}</p>
+                    {user?.school_name && <p className="text-xs text-purple-600 mt-1">{user.school_name}</p>}
+                  </div>
                   <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><LogOut className="w-4 h-4" />Logout</button>
                 </div>
               )}
