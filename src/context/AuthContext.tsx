@@ -58,14 +58,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true, message: 'School admin login successful' };
     }
     
-    // Warden Login (school-scoped)
-    const currentSchoolId = localStorage.getItem('hms_current_school_id');
-    if (currentSchoolId) {
-      const schoolWardens = JSON.parse(localStorage.getItem(`hms_${currentSchoolId}_wardens`) || '[]');
-      const warden = schoolWardens.find((w: any) => (w.username === username || w.email === username) && w.password === password);
+    // Warden Login - Search across all schools
+    for (const school of data.schools) {
+      const schoolWardens = JSON.parse(localStorage.getItem(`hms_${school.id}_wardens`) || '[]');
+      const warden = schoolWardens.find((w: any) => 
+        (w.username === username || w.email === username) && 
+        w.password === password
+      );
+      
       if (warden) {
-        if (warden.status !== 'Active') return { success: false, message: 'Account is deactivated. Contact admin.' };
-        const school = data.schools.find((s: any) => s.id === currentSchoolId);
+        if (warden.status !== 'Active') {
+          return { success: false, message: 'Account is deactivated. Contact admin.' };
+        }
+        
         const wardenUser: AuthUser = { 
           id: warden.id, 
           name: warden.name, 
@@ -73,8 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: 'warden', 
           assigned_house_id: warden.assigned_house_id, 
           email: warden.email,
-          school_id: currentSchoolId,
-          school_name: school?.name
+          school_id: school.id,
+          school_name: school.name
         };
         setUser(wardenUser);
         localStorage.setItem('hms_current_user', JSON.stringify(wardenUser));
