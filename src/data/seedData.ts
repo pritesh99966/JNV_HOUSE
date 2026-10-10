@@ -22,6 +22,39 @@ export const seedSchools: School[] = [
     admin_email: 'kv002@school.com',
     created_at: '2024-01-01',
     status: 'Active'
+  },
+  {
+    id: 'school3',
+    name: 'Delhi Public School',
+    code: 'DPS001',
+    admin_username: 'dps001',
+    admin_password: 'dps001@123',
+    admin_name: 'Amit Sharma',
+    admin_email: 'dps001@school.com',
+    created_at: '2024-01-15',
+    status: 'Active'
+  },
+  {
+    id: 'school4',
+    name: 'Ryan International School',
+    code: 'RIS001',
+    admin_username: 'ris001',
+    admin_password: 'ris001@123',
+    admin_name: 'Priya Singh',
+    admin_email: 'ris001@school.com',
+    created_at: '2024-02-01',
+    status: 'Active'
+  },
+  {
+    id: 'school5',
+    name: 'DAV Public School',
+    code: 'DAV001',
+    admin_username: 'dav001',
+    admin_password: 'dav001@123',
+    admin_name: 'Vikram Patel',
+    admin_email: 'dav001@school.com',
+    created_at: '2024-02-15',
+    status: 'Active'
   }
 ];
 
@@ -55,21 +88,23 @@ export const seedWardens: Warden[] = [
   { id: 'w12', name: 'Anita Verma', username: 'udaygiri_girls', email: 'udaygiri_girls@school.com', mobile: '9876543212', password: 'warden123', assigned_house_id: 'h12', status: 'Active', photo_url: '', created_at: '2024-01-01' },
 ];
 
-const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati'];
-const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi', 'Reddy', 'Shah', 'Mehta'];
+const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati', 'Karan', 'Ritika', 'Aditya', 'Shruti', 'Vishal', 'Megha', 'Akash', 'Pallavi', 'Nitin', 'Kavita', 'Sachin', 'Poonam', 'Harsh', 'Nidhi', 'Varun', 'Tanya', 'Abhishek', 'Simran', 'Rohan', 'Isha'];
+const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi', 'Reddy', 'Shah', 'Mehta', 'Agarwal', 'Tiwari', 'Dubey', 'Mishra', 'Chauhan', 'Yadav', 'Pandey', 'Saxena', 'Srivastava', 'Malhotra'];
 const classes = ['6', '7', '8', '9', '10', '11', '12'];
 const sections = ['A', 'B', 'C'];
+const medicalConditions = ['', '', '', '', '', 'Asthma', 'Allergies', 'Diabetes', '', ''];
 
 function generateStudents(): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 20;
+    const count = 35; // Increased from 20 to 35 students per house
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const cls = house.category === 'Junior Boys' ? classes[Math.floor(Math.random() * 3)] : classes[Math.floor(Math.random() * classes.length)];
       const bedNo = `B${String(Math.floor(Math.random() * 200) + 1).padStart(3, '0')}`;
+      const medical = medicalConditions[Math.floor(Math.random() * medicalConditions.length)];
       students.push({
         id: `s${id}`, admission_no: `ADM${String(2024000 + id).slice(-5)}`,
         student_name: `${firstName} ${lastName}`, gender: house.gender,
@@ -78,7 +113,7 @@ function generateStudents(): Student[] {
         father_name: `Mr. ${firstName} ${lastName}`, mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
         mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
         house_id: house.id, bed_no: bedNo, sr_no: String(i + 1).padStart(2, '0'),
-        photo_url: '', medical_remark: '',
+        photo_url: '', medical_remark: medical,
         status: 'Active', created_at: '2024-01-01', updated_at: '2024-01-01',
       });
       id++;
@@ -91,7 +126,8 @@ function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
   const dates: string[] = [];
-  for (let d = 2; d >= 0; d--) {
+  // Generate attendance for last 7 days
+  for (let d = 6; d >= 0; d--) {
     const date = new Date();
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
@@ -103,15 +139,28 @@ function generateAttendance(students: Student[]): Attendance[] {
       sessions.forEach((session) => {
         const rand = Math.random();
         let status: Attendance['status'];
-        if (rand < 0.85) status = 'Present';
-        else if (rand < 0.92) status = 'Absent';
-        else if (rand < 0.96) status = 'Sick';
-        else if (rand < 0.99) status = 'OD';
-        else status = 'Staff Ward';
+        let remark = '';
+        
+        // More realistic attendance distribution
+        if (rand < 0.82) {
+          status = 'Present';
+        } else if (rand < 0.90) {
+          status = 'Absent';
+          remark = 'Absent without leave';
+        } else if (rand < 0.95) {
+          status = 'Sick';
+          remark = 'Medical leave';
+        } else if (rand < 0.98) {
+          status = 'OD';
+          remark = 'On duty - Sports/Competition';
+        } else {
+          status = 'Staff Ward';
+          remark = 'Under medical supervision';
+        }
         
         attendance.push({
           id: `a${id}`, student_id: student.id, house_id: student.house_id,
-          attendance_date: date, session, status, remark: '', marked_by: 'admin',
+          attendance_date: date, session, status, remark, marked_by: 'admin',
           created_at: date, updated_at: date,
         });
         id++;
