@@ -3,6 +3,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserCheck, UserX, CheckCircle2, Clock } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 export default function WardenDashboard() {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ export default function WardenDashboard() {
         <div className="flex items-center gap-2">
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {morningDone ? '✓' : '⏳'}</span>
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 Night {nightDone ? '✓' : '⏳'}</span>
-          <button onClick={() => navigate('/warden/attendance')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Mark Attendance</button>
+          <button onClick={() => navigate('/warden/attendance?session=Morning')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Mark Attendance</button>
         </div>
       </div>
 
@@ -80,7 +81,7 @@ export default function WardenDashboard() {
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
             {morningDone ? '✓ Completed' : '⏳ Pending'}
           </span>
-          <button onClick={() => navigate('/warden/attendance')} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+          <button onClick={() => navigate('/warden/attendance?session=Morning')} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
             Mark Morning Attendance →
           </button>
         </div>
@@ -121,49 +122,116 @@ export default function WardenDashboard() {
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${nightDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
             {nightDone ? '✓ Completed' : '⏳ Pending'}
           </span>
-          <button onClick={() => navigate('/warden/attendance')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+          <button onClick={() => navigate('/warden/attendance?session=Night')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
             Mark Night Attendance →
           </button>
         </div>
       </div>
 
       {/* Overall Summary */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          📊 Overall Summary
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
-            <p className="text-2xl font-bold text-orange-700">{morningSummary.present}</p>
-            <p className="text-xs text-gray-600 mt-1">☀️ Morning Present</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-orange-400 to-yellow-400 rounded-xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-3xl">☀️</span>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded">Morning</span>
           </div>
-          <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-            <p className="text-2xl font-bold text-indigo-700">{nightSummary.present}</p>
-            <p className="text-xs text-gray-600 mt-1">🌙 Night Present</p>
+          <p className="text-4xl font-bold">{morningSummary.present}</p>
+          <p className="text-sm opacity-90 mt-1">Present</p>
+          <p className="text-2xl font-bold mt-2">{morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+        </div>
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-3xl">🌙</span>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded">Night</span>
           </div>
-          <div className="bg-red-50 rounded-lg p-3 border border-red-200">
-            <p className="text-2xl font-bold text-red-700">{morningSummary.absent + nightSummary.absent}</p>
-            <p className="text-xs text-gray-600 mt-1">Total Absent</p>
+          <p className="text-4xl font-bold">{nightSummary.present}</p>
+          <p className="text-sm opacity-90 mt-1">Present</p>
+          <p className="text-2xl font-bold mt-2">{nightSummary.total > 0 ? ((nightSummary.present / nightSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+        </div>
+        <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-3xl">📊</span>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded">Overall</span>
           </div>
-          <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-            <p className="text-2xl font-bold text-yellow-700">{morningSummary.sick + nightSummary.sick}</p>
-            <p className="text-xs text-gray-600 mt-1">Total Sick</p>
+          <p className="text-4xl font-bold">{morningSummary.present + nightSummary.present}</p>
+          <p className="text-sm opacity-90 mt-1">Total Present</p>
+          <p className="text-2xl font-bold mt-2">{((parseFloat(morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0') + parseFloat(nightSummary.total > 0 ? ((nightSummary.present / nightSummary.total) * 100).toFixed(1) : '0.0')) / 2).toFixed(1)}%</p>
+        </div>
+      </div>
+
+      {/* Attendance Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Morning Attendance Chart */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            ☀️ Morning Attendance Distribution
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Present', value: morningSummary.present },
+                    { name: 'Absent', value: morningSummary.absent },
+                    { name: 'Sick', value: morningSummary.sick },
+                    { name: 'On Duty', value: morningSummary.od },
+                    { name: 'Staff Ward', value: morningSummary.staffWard }
+                  ].filter(item => item.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#ef4444" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#8b5cf6" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <p className="text-2xl font-bold text-blue-700">{morningSummary.od + nightSummary.od}</p>
-            <p className="text-xs text-gray-600 mt-1">Total On Duty</p>
-          </div>
-          <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-            <p className="text-2xl font-bold text-purple-700">{morningSummary.staffWard + nightSummary.staffWard}</p>
-            <p className="text-xs text-gray-600 mt-1">Total Staff Ward</p>
-          </div>
-          <div className="bg-gradient-to-br from-orange-400 to-yellow-400 rounded-lg p-3 text-white">
-            <p className="text-2xl font-bold">{morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0'}%</p>
-            <p className="text-xs mt-1">☀️ Morning %</p>
-          </div>
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg p-3 text-white">
-            <p className="text-2xl font-bold">{nightSummary.total > 0 ? ((nightSummary.present / nightSummary.total) * 100).toFixed(1) : '0.0'}%</p>
-            <p className="text-xs mt-1">🌙 Night %</p>
+        </div>
+
+        {/* Night Attendance Chart */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            🌙 Night Attendance Distribution
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Present', value: nightSummary.present },
+                    { name: 'Absent', value: nightSummary.absent },
+                    { name: 'Sick', value: nightSummary.sick },
+                    { name: 'On Duty', value: nightSummary.od },
+                    { name: 'Staff Ward', value: nightSummary.staffWard }
+                  ].filter(item => item.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#ef4444" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#8b5cf6" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
