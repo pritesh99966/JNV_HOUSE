@@ -34,12 +34,101 @@ export default function WardenDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center mb-3"><Users className="w-5 h-5" /></div>
-          <p className="text-2xl font-bold text-gray-800">{morningSummary.total}</p>
-          <p className="text-xs text-gray-500 mt-1">Total Students</p>
+      {/* Total Students Card */}
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center"><Users className="w-6 h-6" /></div>
+          <div>
+            <p className="text-3xl font-bold text-gray-800">{morningSummary.total}</p>
+            <p className="text-sm text-gray-500">Total Students in {house.house_name}</p>
+          </div>
         </div>
+      </div>
+
+      {/* Morning Attendance Overview */}
+      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-5 border border-orange-200">
+        <h3 className="text-lg font-semibold text-orange-800 mb-4 flex items-center gap-2">
+          <span className="text-2xl">☀️</span> Morning Attendance Overview
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-green-600">{morningSummary.present}</p>
+            <p className="text-xs text-gray-600 mt-1">Present</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-red-600">{morningSummary.absent}</p>
+            <p className="text-xs text-gray-600 mt-1">Absent</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-yellow-600">{morningSummary.sick}</p>
+            <p className="text-xs text-gray-600 mt-1">Sick</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-blue-600">{morningSummary.od}</p>
+            <p className="text-xs text-gray-600 mt-1">On Duty</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-purple-600">{morningSummary.staffWard}</p>
+            <p className="text-xs text-gray-600 mt-1">Staff Ward</p>
+          </div>
+          <div className="bg-gradient-to-br from-orange-400 to-yellow-400 rounded-lg p-4 text-white shadow-sm">
+            <p className="text-3xl font-bold">{morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+            <p className="text-xs mt-1">Attendance</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <span className={`text-sm font-medium px-3 py-1 rounded-full ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+            {morningDone ? '✓ Completed' : '⏳ Pending'}
+          </span>
+          <button onClick={() => navigate('/warden/attendance')} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+            Mark Morning Attendance →
+          </button>
+        </div>
+      </div>
+
+      {/* Night Attendance Overview */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200">
+        <h3 className="text-lg font-semibold text-indigo-800 mb-4 flex items-center gap-2">
+          <span className="text-2xl">🌙</span> Night Attendance Overview
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-green-600">{nightSummary.present}</p>
+            <p className="text-xs text-gray-600 mt-1">Present</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-red-600">{nightSummary.absent}</p>
+            <p className="text-xs text-gray-600 mt-1">Absent</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-yellow-600">{nightSummary.sick}</p>
+            <p className="text-xs text-gray-600 mt-1">Sick</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-blue-600">{nightSummary.od}</p>
+            <p className="text-xs text-gray-600 mt-1">On Duty</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <p className="text-3xl font-bold text-purple-600">{nightSummary.staffWard}</p>
+            <p className="text-xs text-gray-600 mt-1">Staff Ward</p>
+          </div>
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg p-4 text-white shadow-sm">
+            <p className="text-3xl font-bold">{nightSummary.total > 0 ? ((nightSummary.present / nightSummary.total) * 100).toFixed(1) : '0.0'}%</p>
+            <p className="text-xs mt-1">Attendance</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between">
+          <span className={`text-sm font-medium px-3 py-1 rounded-full ${nightDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+            {nightDone ? '✓ Completed' : '⏳ Pending'}
+          </span>
+          <button onClick={() => navigate('/warden/attendance')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+            Mark Night Attendance →
+          </button>
+        </div>
+      </div>
+
+      {/* Overall Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center mb-3"><UserCheck className="w-5 h-5" /></div>
           <p className="text-2xl font-bold text-gray-800">{morningSummary.present}</p>
@@ -55,39 +144,9 @@ export default function WardenDashboard() {
           <p className="text-2xl font-bold text-gray-800">{morningSummary.absent + nightSummary.absent}</p>
           <p className="text-xs text-gray-500 mt-1">Total Absent</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="w-10 h-10 rounded-lg bg-yellow-50 text-yellow-700 flex items-center justify-center mb-3"><UserX className="w-5 h-5" /></div>
-          <p className="text-2xl font-bold text-gray-800">{morningSummary.sick + nightSummary.sick}</p>
-          <p className="text-xs text-gray-500 mt-1">Total Sick</p>
-        </div>
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white">
-          <p className="text-indigo-200 text-xs">Attendance</p>
+          <p className="text-indigo-200 text-xs">Overall Attendance</p>
           <p className="text-3xl font-bold mt-1">{percentage}%</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-5 border border-orange-200">
-          <h3 className="font-semibold text-orange-800 mb-3 flex items-center gap-2">☀️ Morning Attendance</h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div><p className="text-2xl font-bold text-green-600">{morningSummary.present}</p><p className="text-xs text-gray-500">Present</p></div>
-            <div><p className="text-2xl font-bold text-red-600">{morningSummary.absent}</p><p className="text-xs text-gray-500">Absent</p></div>
-            <div><p className="text-2xl font-bold text-yellow-600">{morningSummary.sick + morningSummary.od + morningSummary.staffWard}</p><p className="text-xs text-gray-500">Other</p></div>
-          </div>
-          <div className="mt-3 text-center">
-            <span className={`text-sm font-medium ${morningDone ? 'text-green-600' : 'text-yellow-600'}`}>{morningDone ? '✓ Completed' : '⏳ Pending'}</span>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200">
-          <h3 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2">🌙 Night Attendance</h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div><p className="text-2xl font-bold text-green-600">{nightSummary.present}</p><p className="text-xs text-gray-500">Present</p></div>
-            <div><p className="text-2xl font-bold text-red-600">{nightSummary.absent}</p><p className="text-xs text-gray-500">Absent</p></div>
-            <div><p className="text-2xl font-bold text-yellow-600">{nightSummary.sick + nightSummary.od + nightSummary.staffWard}</p><p className="text-xs text-gray-500">Other</p></div>
-          </div>
-          <div className="mt-3 text-center">
-            <span className={`text-sm font-medium ${nightDone ? 'text-indigo-600' : 'text-gray-500'}`}>{nightDone ? '✓ Completed' : '⏳ Pending'}</span>
-          </div>
         </div>
       </div>
     </div>
