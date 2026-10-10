@@ -63,11 +63,25 @@ export interface Attendance {
   updated_at: string;
 }
 
+export interface School {
+  id: string;
+  name: string;
+  code: string;
+  admin_username: string;
+  admin_password: string;
+  admin_name: string;
+  admin_email: string;
+  created_at: string;
+  status: 'Active' | 'Inactive';
+}
+
 export interface AuthUser {
   id: string;
   name: string;
   username: string;
-  role: UserRole;
+  role: UserRole | 'master';
   assigned_house_id?: string;
   email?: string;
+  school_id?: string;
+  school_name?: string;
 }

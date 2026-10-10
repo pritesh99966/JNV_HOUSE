@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import MasterLogin from './pages/MasterLogin';
+import MasterDashboard from './pages/MasterDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import Students from './pages/Students';
@@ -103,9 +105,20 @@ function HouseDetailsPage() {
 function AppRoutes() {
   const { isAuthenticated, user } = useAuth();
 
+  const getRedirectPath = () => {
+    if (!user) return '/login';
+    if (user.role === 'master') return '/master';
+    if (user.role === 'admin') return '/admin';
+    return '/warden';
+  };
+
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to={user?.role === 'admin' ? '/admin' : '/warden'} replace /> : <Login />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to={getRedirectPath()} replace /> : <Login />} />
+      <Route path="/master-login" element={isAuthenticated && user?.role === 'master' ? <Navigate to="/master" replace /> : <MasterLogin />} />
+      
+      {/* Master Routes */}
+      <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />

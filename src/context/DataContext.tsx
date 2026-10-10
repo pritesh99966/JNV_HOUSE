@@ -1,9 +1,15 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession } from '../types';
-import { getInitialData, saveToStorage } from '../data/seedData';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School } from '../types';
+import { getInitialData, saveToStorage, getSchoolData, saveSchoolData } from '../data/seedData';
+import { useAuth } from './AuthContext';
 
 interface DataContextType {
+  schools: School[];
   houses: House[]; wardens: Warden[]; students: Student[]; attendance: Attendance[];
+  currentSchoolId: string | null;
+  addSchool: (school: Omit<School, 'id' | 'created_at'>) => void;
+  updateSchool: (id: string, school: Partial<School>) => void;
+  deleteSchool: (id: string) => void;
   addHouse: (house: Omit<House, 'id' | 'created_at'>) => void;
   updateHouse: (id: string, house: Partial<House>) => void;
   deleteHouse: (id: string) => void;
@@ -25,8 +31,64 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [data, setData] = useState(() => getInitialData());
-  const refreshData = useCallback(() => { setData(getInitialData()); }, []);
+  const currentSchoolId = user?.school_id || null;
+  
+  // Load school-specific data when school changes
+  useEffect(() => {
+    if (currentSchoolId && user?.role !== 'master') {
+      const schoolData = getSchoolData(currentSchoolId);
+      setData({
+        ...data,
+        houses: schoolData.houses,
+        wardens: schoolData.wardens,
+        students: schoolData.students,
+        attendance: schoolData.attendance
+      });
+    }
+  }, [currentSchoolId]);
+  
+  const refreshData = useCallback(() => { 
+    const initialData = getInitialData();
+    if (currentSchoolId && user?.role !== 'master') {
+      const schoolData = getSchoolData(currentSchoolId);
+      setData({
+        ...initialData,
+        houses: schoolData.houses,
+        wardens: schoolData.wardens,
+        students: schoolData.students,
+        attendance: schoolData.attendance
+      });
+    } else {
+      setData(initialData);
+    }
+  }, [currentSchoolId, user]);
+  
+  // School management functions (Master only)
+  const addSchool = (school: Omit<School, 'id' | 'created_at'>) => {
+    const newSchool: School = { ...school, id: `school${Date.now()}`, created_at: new Date().toISOString() };
+    const updated = [...data.schools, newSchool];
+    setData(d => ({ ...d, schools: updated }));
+    localStorage.setItem('hms_schools', JSON.stringify(updated));
+  };
+  
+  const updateSchool = (id: string, updates: Partial<School>) => {
+    const updated = data.schools.map((s: School) => s.id === id ? { ...s, ...updates } : s);
+    setData(d => ({ ...d, schools: updated }));
+    localStorage.setItem('hms_schools', JSON.stringify(updated));
+  };
+  
+  const deleteSchool = (id: string) => {
+    const updated = data.schools.filter((s: School) => s.id !== id);
+    setData(d => ({ ...d, schools: updated }));
+    localStorage.setItem('hms_schools', JSON.stringify(updated));
+    // Delete school-specific data
+    localStorage.removeItem(`hms_${id}_houses`);
+    localStorage.removeItem(`hms_${id}_wardens`);
+    localStorage.removeItem(`hms_${id}_students`);
+    localStorage.removeItem(`hms_${id}_attendance`);
+  };
 
   const addHouse = (house: Omit<House, 'id' | 'created_at'>) => {
     const newHouse: House = { ...house, id: `h${Date.now()}`, created_at: new Date().toISOString() };
@@ -106,7 +168,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DataContext.Provider value={{ houses: data.houses, wardens: data.wardens, students: data.students, attendance: data.attendance, addHouse, updateHouse, deleteHouse, addWarden, updateWarden, deleteWarden, addStudent, updateStudent, deleteStudent, bulkImportStudents, saveAttendance, bulkSaveAttendance, getAttendanceForDate, getStudentsByHouse, getAttendanceSummary, refreshData }}>
+    <DataContext.Provider value={{ 
+      schools: data.schools,
+      houses: data.houses, 
+      wardens: data.wardens, 
+      students: data.students, 
+      attendance: data.attendance,
+      currentSchoolId,
+      addSchool,
+      updateSchool,
+      deleteSchool,
+      addHouse, 
+      updateHouse, 
+      deleteHouse, 
+      addWarden, 
+      updateWarden, 
+      deleteWarden, 
+      addStudent, 
+      updateStudent, 
+      deleteStudent, 
+      bulkImportStudents, 
+      saveAttendance, 
+      bulkSaveAttendance, 
+      getAttendanceForDate, 
+      getStudentsByHouse, 
+      getAttendanceSummary, 
+      refreshData 
+    }}>
       {children}
     </DataContext.Provider>
   );

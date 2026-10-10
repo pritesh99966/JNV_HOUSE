@@ -1,4 +1,29 @@
-import { House, Warden, Student, Attendance, AttendanceSession } from '../types';
+import { House, Warden, Student, Attendance, AttendanceSession, School } from '../types';
+
+export const seedSchools: School[] = [
+  {
+    id: 'school1',
+    name: 'Kendriya Vidyalaya No. 1',
+    code: 'KV001',
+    admin_username: 'kv001',
+    admin_password: 'kv001@123',
+    admin_name: 'Rajesh Kumar',
+    admin_email: 'kv001@school.com',
+    created_at: '2024-01-01',
+    status: 'Active'
+  },
+  {
+    id: 'school2',
+    name: 'Kendriya Vidyalaya No. 2',
+    code: 'KV002',
+    admin_username: 'kv002',
+    admin_password: 'kv002@123',
+    admin_name: 'Suresh Patel',
+    admin_email: 'kv002@school.com',
+    created_at: '2024-01-01',
+    status: 'Active'
+  }
+];
 
 export const seedHouses: House[] = [
   { id: 'h1', house_name: 'Aravalli Sr Boys', category: 'Senior Boys', gender: 'Male', status: 'Active', created_at: '2024-01-01' },
@@ -100,20 +125,53 @@ export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
 export function getInitialData() {
-  const houses = localStorage.getItem('hms_houses');
-  if (!houses) {
+  const schools = localStorage.getItem('hms_schools');
+  if (!schools) {
+    localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
     localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
-    return { houses: seedHouses, wardens: seedWardens, students: seedStudents, attendance: seedAttendance };
+    return { 
+      schools: seedSchools,
+      houses: seedHouses, 
+      wardens: seedWardens, 
+      students: seedStudents, 
+      attendance: seedAttendance 
+    };
   }
   return {
+    schools: JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[],
     houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
     wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
     students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
     attendance: JSON.parse(localStorage.getItem('hms_attendance') || '[]') as Attendance[],
   };
+}
+
+export function getSchoolData(schoolId: string) {
+  const allSchools = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
+  const school = allSchools.find(s => s.id === schoolId);
+  
+  const schoolHouses = JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[];
+  const schoolWardens = JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[];
+  const schoolStudents = JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[];
+  const schoolAttendance = JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[];
+  
+  return {
+    school,
+    houses: schoolHouses,
+    wardens: schoolWardens,
+    students: schoolStudents,
+    attendance: schoolAttendance
+  };
+}
+
+export function saveSchoolData(schoolId: string, data: any) {
+  if (data.houses) localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(data.houses));
+  if (data.wardens) localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(data.wardens));
+  if (data.students) localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(data.students));
+  if (data.attendance) localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(data.attendance));
 }
 
 export function saveToStorage(key: string, data: any) {
