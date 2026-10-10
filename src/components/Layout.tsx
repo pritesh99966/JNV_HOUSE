@@ -25,6 +25,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/admin/student-report', icon: BarChart3, label: 'Student Report' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
+
+  const masterMenu = [
+    { path: '/master', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/master/licences', icon: FileText, label: 'Licence Management' },
+    { path: '/master/audit-logs', icon: History, label: 'Audit Logs' },
+    { path: '/master/settings', icon: Settings, label: 'Settings' },
+  ];
   
   const wardenMenu = [
     { path: '/warden', icon: LayoutDashboard, label: 'Dashboard' },
@@ -36,7 +43,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/warden/profile', icon: Shield, label: 'My Profile' },
   ];
   
-  const menu = isAdmin ? adminMenu : wardenMenu;
+  const isMaster = user?.role === 'master';
+  const menu = isMaster ? masterMenu : isAdmin ? adminMenu : wardenMenu;
   const handleLogout = () => { logout(); navigate('/login'); };
 
   return (

@@ -1,4 +1,67 @@
-import { House, Warden, Student, Attendance, AttendanceSession, School } from '../types';
+import { House, Warden, Student, Attendance, AttendanceSession, School, Licence } from '../types';
+
+export const seedLicences: Licence[] = [
+  {
+    id: 'lic_school1',
+    school_id: 'school1',
+    plan: 'Premium',
+    start_date: '2024-01-01',
+    expiry_date: '2025-12-31',
+    student_limit: 1000,
+    status: 'Active',
+    amount: 20000,
+    created_at: '2024-01-01',
+    updated_at: '2024-01-01'
+  },
+  {
+    id: 'lic_school2',
+    school_id: 'school2',
+    plan: 'Standard',
+    start_date: '2024-01-01',
+    expiry_date: '2025-06-30',
+    student_limit: 500,
+    status: 'Active',
+    amount: 10000,
+    created_at: '2024-01-01',
+    updated_at: '2024-01-01'
+  },
+  {
+    id: 'lic_school3',
+    school_id: 'school3',
+    plan: 'Standard',
+    start_date: '2024-01-15',
+    expiry_date: '2025-01-14',
+    student_limit: 500,
+    status: 'Active',
+    amount: 10000,
+    created_at: '2024-01-15',
+    updated_at: '2024-01-15'
+  },
+  {
+    id: 'lic_school4',
+    school_id: 'school4',
+    plan: 'Basic',
+    start_date: '2024-02-01',
+    expiry_date: '2024-12-31',
+    student_limit: 200,
+    status: 'Active',
+    amount: 5000,
+    created_at: '2024-02-01',
+    updated_at: '2024-02-01'
+  },
+  {
+    id: 'lic_school5',
+    school_id: 'school5',
+    plan: 'Premium',
+    start_date: '2024-02-15',
+    expiry_date: '2025-02-14',
+    student_limit: 1000,
+    status: 'Active',
+    amount: 20000,
+    created_at: '2024-02-15',
+    updated_at: '2024-02-15'
+  }
+];
 
 export const seedSchools: School[] = [
   {
@@ -178,6 +241,7 @@ export function getInitialData() {
   if (!schools) {
     // First time initialization
     localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
+    localStorage.setItem('hms_licences', JSON.stringify(seedLicences));
     localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
@@ -193,6 +257,7 @@ export function getInitialData() {
     
     return { 
       schools: seedSchools,
+      licences: seedLicences,
       houses: seedHouses, 
       wardens: seedWardens, 
       students: seedStudents, 
@@ -211,8 +276,14 @@ export function getInitialData() {
     }
   });
   
+  // Initialize licences if not present
+  if (!localStorage.getItem('hms_licences')) {
+    localStorage.setItem('hms_licences', JSON.stringify(seedLicences));
+  }
+  
   return {
     schools: schoolsList,
+    licences: JSON.parse(localStorage.getItem('hms_licences') || '[]') as Licence[],
     houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
     wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
     students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
