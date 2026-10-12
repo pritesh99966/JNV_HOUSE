@@ -6,7 +6,7 @@ export const seedSchools: School[] = [
     name: 'Kendriya Vidyalaya No. 1',
     code: 'KV001',
     admin_username: 'kv001',
-    admin_password: 'kv001@123',
+    admin_password: 'KV@2024#Secure!',
     admin_name: 'Rajesh Kumar',
     admin_email: 'kv001@school.com',
     created_at: '2024-01-01',
@@ -14,15 +14,15 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-01-01',
     licence_expiry_date: '2025-12-31',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    total_time_spent: 1250 // 20 hours 50 minutes
+    last_login: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    total_time_spent: 1250
   },
   {
     id: 'school2',
     name: 'Kendriya Vidyalaya No. 2',
     code: 'KV002',
     admin_username: 'kv002',
-    admin_password: 'kv002@123',
+    admin_password: 'KV2@Admin#2024',
     admin_name: 'Suresh Patel',
     admin_email: 'kv002@school.com',
     created_at: '2024-01-01',
@@ -30,15 +30,15 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-01-01',
     licence_expiry_date: '2025-06-30',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    total_time_spent: 890 // 14 hours 50 minutes
+    last_login: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    total_time_spent: 890
   },
   {
     id: 'school3',
     name: 'Delhi Public School',
     code: 'DPS001',
     admin_username: 'dps001',
-    admin_password: 'dps001@123',
+    admin_password: 'DPS@Secure#2024',
     admin_name: 'Amit Sharma',
     admin_email: 'dps001@school.com',
     created_at: '2024-01-15',
@@ -46,15 +46,15 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-01-15',
     licence_expiry_date: '2025-01-14',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-    total_time_spent: 2100 // 35 hours
+    last_login: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    total_time_spent: 2100
   },
   {
     id: 'school4',
     name: 'Ryan International School',
     code: 'RIS001',
     admin_username: 'ris001',
-    admin_password: 'ris001@123',
+    admin_password: 'Ryan@Admin#2024',
     admin_name: 'Priya Singh',
     admin_email: 'ris001@school.com',
     created_at: '2024-02-01',
@@ -62,15 +62,15 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-02-01',
     licence_expiry_date: '2024-12-31',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    total_time_spent: 560 // 9 hours 20 minutes
+    last_login: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    total_time_spent: 560
   },
   {
     id: 'school5',
     name: 'DAV Public School',
     code: 'DAV001',
     admin_username: 'dav001',
-    admin_password: 'dav001@123',
+    admin_password: 'DAV@Secure#2024',
     admin_name: 'Vikram Patel',
     admin_email: 'dav001@school.com',
     created_at: '2024-02-15',
@@ -78,8 +78,8 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-02-15',
     licence_expiry_date: '2025-02-14',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
-    total_time_spent: 1680 // 28 hours
+    last_login: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    total_time_spent: 1680
   }
 ];
 
