@@ -72,8 +72,12 @@ export default function Login() {
               <p>dps001 / DPS@Secure#2024</p>
               <p>ris001 / Ryan@Admin#2024</p>
               <p>dav001 / DAV@Secure#2024</p>
-              <p className="font-medium text-gray-700 mt-2">Warden:</p>
-              <p>aravalli_sr / warden123</p>
+              <p className="font-medium text-gray-700 mt-2">Wardens:</p>
+              <p>KV001: kv001_w1 / wardenKV001</p>
+              <p>KV002: kv002_w1 / wardenKV002</p>
+              <p>DPS001: dps001_w1 / wardenDPS001</p>
+              <p>RIS001: ris001_w1 / wardenRIS001</p>
+              <p>DAV001: dav001_w1 / wardenDAV001</p>
             </div>
           </div>
         </div>

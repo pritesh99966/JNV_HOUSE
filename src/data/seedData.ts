@@ -148,7 +148,7 @@ function generateWardensForSchool(schoolId: string, schoolCode: string): Warden[
     username: `${schoolCode.toLowerCase()}_w${index + 1}`,
     email: `${schoolCode.toLowerCase()}_w${index + 1}@school.com`,
     mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-    password: `${schoolCode}@Warden#2024`,
+    password: `warden${schoolCode}`,
     assigned_house_id: w.house,
     status: 'Active' as const,
     photo_url: '',
