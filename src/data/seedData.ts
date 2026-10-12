@@ -10,7 +10,12 @@ export const seedSchools: School[] = [
     admin_name: 'Rajesh Kumar',
     admin_email: 'kv001@school.com',
     created_at: '2024-01-01',
-    status: 'Active'
+    status: 'Active',
+    licence_start_date: '2024-01-01',
+    licence_expiry_date: '2025-12-31',
+    licence_status: 'Active',
+    last_login: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    total_time_spent: 1250 // 20 hours 50 minutes
   },
   {
     id: 'school2',
@@ -21,7 +26,60 @@ export const seedSchools: School[] = [
     admin_name: 'Suresh Patel',
     admin_email: 'kv002@school.com',
     created_at: '2024-01-01',
-    status: 'Active'
+    status: 'Active',
+    licence_start_date: '2024-01-01',
+    licence_expiry_date: '2025-06-30',
+    licence_status: 'Active',
+    last_login: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    total_time_spent: 890 // 14 hours 50 minutes
+  },
+  {
+    id: 'school3',
+    name: 'Delhi Public School',
+    code: 'DPS001',
+    admin_username: 'dps001',
+    admin_password: 'dps001@123',
+    admin_name: 'Amit Sharma',
+    admin_email: 'dps001@school.com',
+    created_at: '2024-01-15',
+    status: 'Active',
+    licence_start_date: '2024-01-15',
+    licence_expiry_date: '2025-01-14',
+    licence_status: 'Active',
+    last_login: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+    total_time_spent: 2100 // 35 hours
+  },
+  {
+    id: 'school4',
+    name: 'Ryan International School',
+    code: 'RIS001',
+    admin_username: 'ris001',
+    admin_password: 'ris001@123',
+    admin_name: 'Priya Singh',
+    admin_email: 'ris001@school.com',
+    created_at: '2024-02-01',
+    status: 'Active',
+    licence_start_date: '2024-02-01',
+    licence_expiry_date: '2024-12-31',
+    licence_status: 'Active',
+    last_login: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    total_time_spent: 560 // 9 hours 20 minutes
+  },
+  {
+    id: 'school5',
+    name: 'DAV Public School',
+    code: 'DAV001',
+    admin_username: 'dav001',
+    admin_password: 'dav001@123',
+    admin_name: 'Vikram Patel',
+    admin_email: 'dav001@school.com',
+    created_at: '2024-02-15',
+    status: 'Active',
+    licence_start_date: '2024-02-15',
+    licence_expiry_date: '2025-02-14',
+    licence_status: 'Active',
+    last_login: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+    total_time_spent: 1680 // 28 hours
   }
 ];
 
@@ -163,6 +221,50 @@ function generateAttendance(students: Student[]): Attendance[] {
 export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
+// Generate dummy activity logs
+function generateActivityLogs(): any[] {
+  const logs: any[] = [];
+  const actions = [
+    { action: 'LOGIN', details: 'Warden logged in to the system' },
+    { action: 'ATTENDANCE_MARKED', details: 'Morning attendance marked for 35 students' },
+    { action: 'ATTENDANCE_MARKED', details: 'Night attendance marked for 35 students' },
+    { action: 'STUDENT_ADDED', details: 'New student added: Rahul Kumar' },
+    { action: 'STUDENT_UPDATED', details: 'Student details updated: Amit Sharma' },
+    { action: 'STUDENT_IMPORTED', details: 'Imported 25 students from Excel file' },
+    { action: 'REPORT_GENERATED', details: 'Monthly attendance report generated' },
+    { action: 'LOGOUT', details: 'Warden logged out' }
+  ];
+
+  // Generate logs for each warden
+  seedWardens.forEach((warden, index) => {
+    const numLogs = 5 + Math.floor(Math.random() * 10); // 5-15 logs per warden
+    
+    for (let i = 0; i < numLogs; i++) {
+      const randomAction = actions[Math.floor(Math.random() * actions.length)];
+      const daysAgo = Math.floor(Math.random() * 7); // Last 7 days
+      const hoursAgo = Math.floor(Math.random() * 24);
+      const timestamp = new Date(Date.now() - (daysAgo * 24 * 60 * 60 * 1000) - (hoursAgo * 60 * 60 * 1000));
+      
+      logs.push({
+        id: `log_${Date.now()}_${index}_${i}`,
+        timestamp: timestamp.toISOString(),
+        user_id: warden.id,
+        user_name: warden.name,
+        user_role: 'warden',
+        school_id: 'school1', // All wardens belong to school1 for now
+        action: randomAction.action,
+        details: randomAction.details,
+        ip_address: '192.168.1.' + (100 + index)
+      });
+    }
+  });
+
+  // Sort by timestamp descending
+  return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+export const seedActivityLogs = generateActivityLogs();
+
 export function getInitialData() {
   const schools = localStorage.getItem('hms_schools');
   if (!schools) {
@@ -172,6 +274,7 @@ export function getInitialData() {
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
+    localStorage.setItem('hms_activity_logs', JSON.stringify(seedActivityLogs));
     
     seedSchools.forEach(school => {
       localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));

@@ -73,6 +73,23 @@ export interface School {
   admin_email: string;
   created_at: string;
   status: 'Active' | 'Inactive' | 'Suspended';
+  licence_start_date?: string;
+  licence_expiry_date?: string;
+  licence_status?: 'Active' | 'Expired' | 'Suspended';
+  last_login?: string;
+  total_time_spent?: number; // in minutes
+}
+
+export interface ActivityLog {
+  id: string;
+  timestamp: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  school_id: string;
+  action: string;
+  details: string;
+  ip_address?: string;
 }
 
 export interface Licence {

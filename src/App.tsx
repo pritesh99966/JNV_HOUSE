@@ -5,6 +5,7 @@ import { DataProvider, useData } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import MasterDashboard from './pages/MasterDashboard';
+import SchoolAnalytics from './pages/SchoolAnalytics';
 import AdminDashboard from './pages/AdminDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import Students from './pages/Students';
@@ -14,6 +15,7 @@ import Wardens from './pages/Wardens';
 import Houses from './pages/Houses';
 import Reports from './pages/Reports';
 import StudentMonthlyReport from './pages/StudentMonthlyReport';
+import ActivityLogs from './pages/ActivityLogs';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -117,6 +119,7 @@ function AppRoutes() {
       
       {/* Master Routes */}
       <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
+      <Route path="/master/school-analytics" element={<ProtectedRoute requiredRole="master"><SchoolAnalytics /></ProtectedRoute>} />
       <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><Settings /></ProtectedRoute>} />
       
       {/* Admin Routes */}
@@ -128,6 +131,7 @@ function AppRoutes() {
       <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
       <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><StudentMonthlyReport /></ProtectedRoute>} />
+      <Route path="/admin/activity-logs" element={<ProtectedRoute requiredRole="admin"><ActivityLogs /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
       <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetailsPage /></ProtectedRoute>} />
       

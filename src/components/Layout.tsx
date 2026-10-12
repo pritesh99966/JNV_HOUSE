@@ -17,6 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   
   const masterMenu = [
     { path: '/master', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/master/school-analytics', icon: BarChart3, label: 'School Analytics' },
     { path: '/master/settings', icon: Settings, label: 'Settings' },
   ];
   
@@ -29,6 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/admin/attendance-history', icon: History, label: 'Attendance History' },
     { path: '/admin/reports', icon: FileText, label: 'Reports' },
     { path: '/admin/student-report', icon: BarChart3, label: 'Student Report' },
+    { path: '/admin/activity-logs', icon: History, label: 'Activity Logs' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
   

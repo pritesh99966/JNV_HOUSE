@@ -1,10 +1,13 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { BarChart3, Settings, Plus } from 'lucide-react';
 
 export default function MasterDashboard() {
   const { schools, students, houses } = useData();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -29,6 +32,52 @@ export default function MasterDashboard() {
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 text-white">
           <p className="text-2xl font-bold">{schools.filter((s: any) => s.status === 'Active').length}</p>
           <p className="text-xs mt-1">Active Schools</p>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <h3 className="font-semibold text-gray-800 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button 
+            onClick={() => navigate('/master/school-analytics')}
+            className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+          >
+            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-800">School Analytics</p>
+              <p className="text-xs text-gray-500">View detailed school statistics</p>
+            </div>
+          </button>
+          <button 
+            onClick={() => navigate('/master/settings')}
+            className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+          >
+            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+              <Settings className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-800">Settings</p>
+              <p className="text-xs text-gray-500">Manage system settings</p>
+            </div>
+          </button>
+          <button 
+            onClick={() => {
+              // Add new school functionality
+              alert('Add School feature coming soon!');
+            }}
+            className="flex items-center gap-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              <Plus className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-800">Add School</p>
+              <p className="text-xs text-gray-500">Create new school account</p>
+            </div>
+          </button>
         </div>
       </div>
 
