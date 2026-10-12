@@ -125,19 +125,44 @@ export const seedHouses: House[] = [
   { id: 'h12', house_name: 'Udaygiri Girls', category: 'Girls', gender: 'Female', status: 'Active', created_at: '2024-01-01' },
 ];
 
+// Generate unique wardens for each school
+function generateWardensForSchool(schoolId: string, schoolCode: string): Warden[] {
+  const wardenNames = [
+    { name: 'Rajesh Kumar', house: 'h1' },
+    { name: 'Suresh Patel', house: 'h2' },
+    { name: 'Mahesh Singh', house: 'h3' },
+    { name: 'Dinesh Sharma', house: 'h4' },
+    { name: 'Vikram Joshi', house: 'h5' },
+    { name: 'Amit Verma', house: 'h6' },
+    { name: 'Prakash Gupta', house: 'h7' },
+    { name: 'Sanjay Reddy', house: 'h8' },
+    { name: 'Priya Sharma', house: 'h9' },
+    { name: 'Neha Patel', house: 'h10' },
+    { name: 'Kavita Singh', house: 'h11' },
+    { name: 'Anita Verma', house: 'h12' }
+  ];
+
+  return wardenNames.map((w, index) => ({
+    id: `w_${schoolId}_${index + 1}`,
+    name: w.name,
+    username: `${schoolCode.toLowerCase()}_w${index + 1}`,
+    email: `${schoolCode.toLowerCase()}_w${index + 1}@school.com`,
+    mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
+    password: `${schoolCode}@Warden#2024`,
+    assigned_house_id: w.house,
+    status: 'Active' as const,
+    photo_url: '',
+    created_at: '2024-01-01'
+  }));
+}
+
+// Generate wardens for all schools
 export const seedWardens: Warden[] = [
-  { id: 'w1', name: 'Rajesh Kumar', username: 'aravalli_sr', email: 'aravalli_sr@school.com', mobile: '9876543201', password: 'warden123', assigned_house_id: 'h1', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w2', name: 'Suresh Patel', username: 'nilgiri_sr', email: 'nilgiri_sr@school.com', mobile: '9876543202', password: 'warden123', assigned_house_id: 'h2', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w3', name: 'Mahesh Singh', username: 'shivalik_sr', email: 'shivalik_sr@school.com', mobile: '9876543203', password: 'warden123', assigned_house_id: 'h3', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w4', name: 'Dinesh Sharma', username: 'udaygiri_sr', email: 'udaygiri_sr@school.com', mobile: '9876543204', password: 'warden123', assigned_house_id: 'h4', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w5', name: 'Vikram Joshi', username: 'aravalli_jr', email: 'aravalli_jr@school.com', mobile: '9876543205', password: 'warden123', assigned_house_id: 'h5', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w6', name: 'Amit Verma', username: 'nilgiri_jr', email: 'nilgiri_jr@school.com', mobile: '9876543206', password: 'warden123', assigned_house_id: 'h6', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w7', name: 'Prakash Gupta', username: 'shivalik_jr', email: 'shivalik_jr@school.com', mobile: '9876543207', password: 'warden123', assigned_house_id: 'h7', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w8', name: 'Sanjay Reddy', username: 'udaygiri_jr', email: 'udaygiri_jr@school.com', mobile: '9876543208', password: 'warden123', assigned_house_id: 'h8', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w9', name: 'Priya Sharma', username: 'aravalli_girls', email: 'aravalli_girls@school.com', mobile: '9876543209', password: 'warden123', assigned_house_id: 'h9', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w10', name: 'Neha Patel', username: 'nilgiri_girls', email: 'nilgiri_girls@school.com', mobile: '9876543210', password: 'warden123', assigned_house_id: 'h10', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w11', name: 'Kavita Singh', username: 'shivalik_girls', email: 'shivalik_girls@school.com', mobile: '9876543211', password: 'warden123', assigned_house_id: 'h11', status: 'Active', photo_url: '', created_at: '2024-01-01' },
-  { id: 'w12', name: 'Anita Verma', username: 'udaygiri_girls', email: 'udaygiri_girls@school.com', mobile: '9876543212', password: 'warden123', assigned_house_id: 'h12', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  ...generateWardensForSchool('school1', 'KV001'),
+  ...generateWardensForSchool('school2', 'KV002'),
+  ...generateWardensForSchool('school3', 'DPS001'),
+  ...generateWardensForSchool('school4', 'RIS001'),
+  ...generateWardensForSchool('school5', 'DAV001')
 ];
 
 const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati'];
@@ -145,7 +170,7 @@ const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi
 const classes = ['6', '7', '8', '9', '10', '11', '12'];
 const sections = ['A', 'B', 'C'];
 
-function generateStudents(): Student[] {
+function generateStudentsForSchool(schoolId: string): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
@@ -156,21 +181,39 @@ function generateStudents(): Student[] {
       const cls = house.category === 'Junior Boys' ? classes[Math.floor(Math.random() * 3)] : classes[Math.floor(Math.random() * classes.length)];
       const bedNo = `B${String(Math.floor(Math.random() * 200) + 1).padStart(3, '0')}`;
       students.push({
-        id: `s${id}`, admission_no: `ADM${String(2024000 + id).slice(-5)}`,
-        student_name: `${firstName} ${lastName}`, gender: house.gender,
-        class: cls, section: sections[Math.floor(Math.random() * sections.length)],
+        id: `s_${schoolId}_${id}`, 
+        admission_no: `${schoolId.toUpperCase()}_ADM${String(2024000 + id).slice(-5)}`,
+        student_name: `${firstName} ${lastName}`, 
+        gender: house.gender,
+        class: cls, 
+        section: sections[Math.floor(Math.random() * sections.length)],
         dob: `${2008 + Math.floor(Math.random() * 6)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-        father_name: `Mr. ${firstName} ${lastName}`, mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
+        father_name: `Mr. ${firstName} ${lastName}`, 
+        mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
         mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-        house_id: house.id, bed_no: bedNo, sr_no: String(i + 1).padStart(2, '0'),
-        photo_url: '', medical_remark: '',
-        status: 'Active', created_at: '2024-01-01', updated_at: '2024-01-01',
+        house_id: house.id, 
+        bed_no: bedNo, 
+        sr_no: String(i + 1).padStart(2, '0'),
+        photo_url: '', 
+        medical_remark: '',
+        status: 'Active', 
+        created_at: '2024-01-01', 
+        updated_at: '2024-01-01',
       });
       id++;
     }
   });
   return students;
 }
+
+// Generate students for all schools
+export const seedStudents: Student[] = [
+  ...generateStudentsForSchool('school1'),
+  ...generateStudentsForSchool('school2'),
+  ...generateStudentsForSchool('school3'),
+  ...generateStudentsForSchool('school4'),
+  ...generateStudentsForSchool('school5')
+];
 
 function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
@@ -218,7 +261,6 @@ function generateAttendance(students: Student[]): Attendance[] {
   return attendance;
 }
 
-export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
 // Generate dummy activity logs

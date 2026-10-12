@@ -23,10 +23,10 @@ export default function Settings() {
     { label: 'Total Students', value: students.length },
     { label: 'Total Wardens', value: wardens.length },
   ] : [
-    { label: 'Total Houses', value: houses.filter((h: any) => !schoolId || h.school_id === schoolId).length },
-    { label: 'Total Wardens', value: wardens.filter((w: any) => !schoolId || w.school_id === schoolId).length },
-    { label: 'Total Students', value: students.filter((s: any) => !schoolId || s.school_id === schoolId).length },
-    { label: 'Attendance Records', value: attendance.filter((a: any) => !schoolId || a.school_id === schoolId).length },
+    { label: 'Total Houses', value: houses.length },
+    { label: 'Total Wardens', value: wardens.length },
+    { label: 'Total Students', value: students.length },
+    { label: 'Attendance Records', value: attendance.length },
   ];
 
   const handleBackup = () => {
@@ -298,13 +298,22 @@ export default function Settings() {
                   ))}
                 </>
               )}
-              {!isMaster && wardens.filter((w: any) => !schoolId || w.school_id === schoolId).map((w: any) => (
-                <tr key={w.id}>
-                  <td className="px-4 py-2">Warden</td>
-                  <td className="px-4 py-2 font-mono">{w.username}</td>
-                  <td className="px-4 py-2 font-mono">{w.password}</td>
-                </tr>
-              ))}
+              {!isMaster && (
+                <>
+                  <tr>
+                    <td className="px-4 py-2">School Admin</td>
+                    <td className="px-4 py-2 font-mono">{user?.username}</td>
+                    <td className="px-4 py-2 font-mono">{schools.find((s: any) => s.id === schoolId)?.admin_password}</td>
+                  </tr>
+                  {wardens.map((w: any) => (
+                    <tr key={w.id}>
+                      <td className="px-4 py-2">Warden - {w.name}</td>
+                      <td className="px-4 py-2 font-mono">{w.username}</td>
+                      <td className="px-4 py-2 font-mono">{w.password}</td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </div>

@@ -73,19 +73,32 @@ export default function Students() {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxSize = 150;
+          const maxSize = 100; // Reduced size for better compression
           let width = img.width;
           let height = img.height;
+          
+          // Calculate new dimensions
           if (width > height) {
             if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
           } else {
             if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
           }
+          
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.6);
+          
+          // Use lower quality for smaller file size
+          let quality = 0.5;
+          let compressed = canvas.toDataURL('image/jpeg', quality);
+          
+          // Keep reducing quality until under 15KB (15360 bytes)
+          const maxSizeBytes = 15360; // 15KB
+          while (compressed.length > maxSizeBytes && quality > 0.1) {
+            quality -= 0.1;
+            compressed = canvas.toDataURL('image/jpeg', quality);
+          }
+          
           setFormData({ ...formData, photo_url: compressed });
         };
         img.src = reader.result as string;

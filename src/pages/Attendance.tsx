@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Student, AttendanceStatus, AttendanceSession } from '../types';
 import { Save, RotateCcw, CheckCheck, AlertCircle, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { logAttendanceMarking } from '../utils/schoolManagement';
 
 export default function Attendance() {
   const { user } = useAuth();
@@ -49,6 +50,18 @@ export default function Attendance() {
     if (records.length === 0) { setToast({ type: 'warning', message: 'No data to save' }); setTimeout(() => setToast(null), 3000); return; }
     bulkSaveAttendance(records, selectedDate, selectedSession, user?.id || 'admin');
     setShowConfirm(false); setHasChanges(false);
+    
+    // Log attendance marking activity
+    if (user && selectedSession) {
+      logAttendanceMarking(
+        user.school_id || '',
+        user.id,
+        user.name,
+        selectedSession,
+        records.length
+      );
+    }
+    
     setToast({ type: 'success', message: `${selectedSession} attendance saved for ${records.length} students` }); setTimeout(() => setToast(null), 3000);
   };
 

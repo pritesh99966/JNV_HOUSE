@@ -84,12 +84,30 @@ export function addActivityLog(log: Omit<ActivityLog, 'id' | 'timestamp'>): void
   };
   logs.unshift(newLog); // Add to beginning
   
-  // Keep only last 1000 logs
-  if (logs.length > 1000) {
-    logs.splice(1000);
+  // Keep only last 5000 logs
+  if (logs.length > 5000) {
+    logs.splice(5000);
   }
   
   localStorage.setItem('hms_activity_logs', JSON.stringify(logs));
+}
+
+// Log attendance marking
+export function logAttendanceMarking(
+  schoolId: string,
+  userId: string,
+  userName: string,
+  session: 'Morning' | 'Night',
+  studentCount: number
+): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'ATTENDANCE_MARKED',
+    details: `${session} attendance marked for ${studentCount} students at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
 }
 
 // Get activity logs for a school
