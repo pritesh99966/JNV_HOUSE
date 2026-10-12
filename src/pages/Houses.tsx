@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { House, HouseCategory, Gender, HouseStatus } from '../types';
 import { Plus, Edit2, Trash2, X, Users } from 'lucide-react';
+import { logHouseAdded, logHouseUpdated, logHouseDeleted } from '../utils/schoolManagement';
 
 export default function Houses() {
   const { houses, students, wardens, addHouse, updateHouse, deleteHouse } = useData();
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingHouse, setEditingHouse] = useState<House | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -15,7 +18,15 @@ export default function Houses() {
   const openEditForm = (h: House) => { setEditingHouse(h); setFormData({ house_name: h.house_name, category: h.category, gender: h.gender, status: h.status }); setShowForm(true); };
   const handleSave = () => {
     if (!formData.house_name) { setToast({ type: 'error', message: 'Name required' }); setTimeout(() => setToast(null), 3000); return; }
-    if (editingHouse) { updateHouse(editingHouse.id, formData); setToast({ type: 'success', message: 'Updated' }); } else { addHouse(formData); setToast({ type: 'success', message: 'Added' }); }
+    if (editingHouse) { 
+      updateHouse(editingHouse.id, formData); 
+      logHouseUpdated(user?.school_id || '', user?.id || '', user?.name || '', formData.house_name);
+      setToast({ type: 'success', message: 'Updated' }); 
+    } else { 
+      addHouse(formData); 
+      logHouseAdded(user?.school_id || '', user?.id || '', user?.name || '', formData.house_name);
+      setToast({ type: 'success', message: 'Added' }); 
+    }
     setShowForm(false); setTimeout(() => setToast(null), 3000);
   };
 
@@ -66,7 +77,14 @@ export default function Houses() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full"><h3 className="text-lg font-bold mb-2">Delete House?</h3><p className="text-sm text-gray-600 mb-4">This will permanently remove this house.</p>
-            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { deleteHouse(showDeleteConfirm); setShowDeleteConfirm(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
+            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { 
+              const house = houses.find((h: House) => h.id === showDeleteConfirm);
+              deleteHouse(showDeleteConfirm); 
+              if (house && user) {
+                logHouseDeleted(user.school_id || '', user.id || '', user.name || '', house.house_name);
+              }
+              setShowDeleteConfirm(null); 
+            }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
           </div>
         </div>
       )}

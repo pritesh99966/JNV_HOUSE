@@ -1,11 +1,15 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School } from '../types';
-import { getInitialData, saveToStorage, getSchoolData, saveSchoolData } from '../data/seedData';
+import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School, Licence } from '../types';
+import { getInitialData, saveToStorage, getSchoolData } from '../data/seedData';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
   schools: School[];
-  houses: House[]; wardens: Warden[]; students: Student[]; attendance: Attendance[];
+  licences: Licence[];
+  houses: House[];
+  wardens: Warden[];
+  students: Student[];
+  attendance: Attendance[];
   currentSchoolId: string | null;
   addSchool: (school: Omit<School, 'id' | 'created_at'>) => void;
   updateSchool: (id: string, school: Partial<School>) => void;
@@ -35,17 +39,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState(() => getInitialData());
   const currentSchoolId = user?.school_id || null;
   
-  // Load school-specific data when school changes
   useEffect(() => {
     if (currentSchoolId && user?.role !== 'master') {
       const schoolData = getSchoolData(currentSchoolId);
-      setData({
-        ...data,
+      setData(d => ({
+        ...d,
         houses: schoolData.houses,
         wardens: schoolData.wardens,
         students: schoolData.students,
         attendance: schoolData.attendance
-      });
+      }));
     }
   }, [currentSchoolId]);
   
@@ -65,7 +68,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [currentSchoolId, user]);
   
-  // School management functions (Master only)
   const addSchool = (school: Omit<School, 'id' | 'created_at'>) => {
     const newSchool: School = { ...school, id: `school${Date.now()}`, created_at: new Date().toISOString() };
     const updated = [...data.schools, newSchool];
@@ -83,20 +85,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updated = data.schools.filter((s: School) => s.id !== id);
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
-    // Delete school-specific data
-    localStorage.removeItem(`hms_${id}_houses`);
-    localStorage.removeItem(`hms_${id}_wardens`);
-    localStorage.removeItem(`hms_${id}_students`);
-    localStorage.removeItem(`hms_${id}_attendance`);
   };
 
-  // Helper function to save data based on user role
   const saveDataToStorage = (key: string, data: any) => {
     if (currentSchoolId && user?.role !== 'master') {
-      // School admin - save to school-specific storage
       localStorage.setItem(`hms_${currentSchoolId}_${key}`, JSON.stringify(data));
     } else {
-      // Master admin - save to general storage
       localStorage.setItem(`hms_${key}`, JSON.stringify(data));
     }
   };
@@ -166,6 +160,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setData(d => ({ ...d, students: updated })); 
     saveDataToStorage('students', updated);
   };
+  
   const saveAttendance = (studentId: string, houseId: string, date: string, session: AttendanceSession, status: AttendanceStatus, remark: string, markedBy: string): boolean => {
     const existing = data.attendance.find((a: Attendance) => a.student_id === studentId && a.attendance_date === date && a.session === session);
     const now = new Date().toISOString();
@@ -196,6 +191,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setData(d => ({ ...d, attendance: updatedAttendance })); 
     saveDataToStorage('attendance', updatedAttendance);
   };
+  
   const getAttendanceForDate = (houseId: string, date: string, session: AttendanceSession): Attendance[] => data.attendance.filter((a: Attendance) => a.house_id === houseId && a.attendance_date === date && a.session === session);
   const getStudentsByHouse = (houseId: string): Student[] => data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
   const getAttendanceSummary = (houseId: string, date: string, session: AttendanceSession) => {
@@ -214,6 +210,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider value={{ 
       schools: data.schools,
+      licences: data.licences,
       houses: data.houses, 
       wardens: data.wardens, 
       students: data.students, 

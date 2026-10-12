@@ -4,9 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Student, AttendanceStatus, AttendanceSession } from '../types';
 import { Save, RotateCcw, CheckCheck, AlertCircle, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-
-const STATUS_OPTIONS: AttendanceStatus[] = ['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'];
-const STATUS_COLORS: Record<string, string> = { Present: 'bg-green-100 text-green-700 border-green-300', Absent: 'bg-red-100 text-red-700 border-red-300', Sick: 'bg-yellow-100 text-yellow-700 border-yellow-300', OD: 'bg-blue-100 text-blue-700 border-blue-300', 'Staff Ward': 'bg-purple-100 text-purple-700 border-purple-300' };
+import { logAttendanceMarking } from '../utils/schoolManagement';
 
 export default function Attendance() {
   const { user } = useAuth();
@@ -52,6 +50,18 @@ export default function Attendance() {
     if (records.length === 0) { setToast({ type: 'warning', message: 'No data to save' }); setTimeout(() => setToast(null), 3000); return; }
     bulkSaveAttendance(records, selectedDate, selectedSession, user?.id || 'admin');
     setShowConfirm(false); setHasChanges(false);
+    
+    // Log attendance marking activity
+    if (user && selectedSession) {
+      logAttendanceMarking(
+        user.school_id || '',
+        user.id,
+        user.name,
+        selectedSession,
+        records.length
+      );
+    }
+    
     setToast({ type: 'success', message: `${selectedSession} attendance saved for ${records.length} students` }); setTimeout(() => setToast(null), 3000);
   };
 
@@ -119,7 +129,7 @@ export default function Attendance() {
                 <th className="text-left px-3 py-3">Student</th>
                 <th className="text-left px-3 py-3 w-16">Class</th>
                 <th className="text-left px-3 py-3 w-16 hidden sm:table-cell">Bed</th>
-                {STATUS_OPTIONS.map(s => <th key={s} className="text-center px-2 py-3 text-xs">{s}</th>)}
+                {['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'].map(s => <th key={s} className="text-center px-2 py-3 text-xs">{s}</th>)}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -134,11 +144,11 @@ export default function Attendance() {
                   </td>
                   <td className="px-3 py-2.5 text-gray-600">{student.class}-{student.section}</td>
                   <td className="px-3 py-2.5 text-gray-600 hidden sm:table-cell">{student.bed_no || '-'}</td>
-                  {STATUS_OPTIONS.map(status => (
+                  {['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'].map(status => (
                     <td key={status} className="text-center px-2 py-2.5">
                       <label className="cursor-pointer inline-flex items-center justify-center">
-                        <input type="radio" name={`att_${student.id}`} checked={attendanceData[student.id] === status} onChange={() => handleStatusChange(student.id, status)} className="sr-only" />
-                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${attendanceData[student.id] === status ? STATUS_COLORS[status] + ' border-current' : 'border-gray-300 hover:border-gray-400'}`}>
+                        <input type="radio" name={`att_${student.id}`} checked={attendanceData[student.id] === status} onChange={() => handleStatusChange(student.id, status as AttendanceStatus)} className="sr-only" />
+                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${attendanceData[student.id] === status ? 'bg-green-100 text-green-700 border-green-300' : 'border-gray-300 hover:border-gray-400'}`}>
                           {attendanceData[student.id] === status && <span className="w-3 h-3 rounded-full bg-current"></span>}
                         </span>
                       </label>

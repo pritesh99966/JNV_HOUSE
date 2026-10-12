@@ -65,17 +65,16 @@ export default function Login() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs font-semibold text-gray-600 mb-2">Demo Credentials:</p>
             <div className="space-y-1 text-xs text-gray-500">
-              <p><span className="font-medium">School Admin:</span> kv001 / kv001@123</p>
-              <p><span className="font-medium">Warden:</span> aravalli_sr / warden123</p>
+              <p><span className="font-medium">Master Admin:</span> master / master123</p>
+              <p className="font-medium text-gray-700 mt-2">School Admins:</p>
+              <p>kv001 / KV@2024#Secure!</p>
+              <p>kv002 / KV2@Admin#2024</p>
+              <p>dps001 / DPS@Secure#2024</p>
+              <p>ris001 / Ryan@Admin#2024</p>
+              <p>dav001 / DAV@Secure#2024</p>
+              <p className="font-medium text-gray-700 mt-2">Warden:</p>
+              <p>aravalli_sr / warden123</p>
             </div>
-          </div>
-          <div className="mt-4 text-center">
-            <button 
-              onClick={() => navigate('/master-login')} 
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors"
-            >
-              🔐 Master Admin Login →
-            </button>
           </div>
         </div>
       </div>

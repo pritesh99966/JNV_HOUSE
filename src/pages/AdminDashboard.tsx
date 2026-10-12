@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, UserX, CheckCircle2, Clock } from 'lucide-react';
+import { Users, UserCheck, UserX, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { getLicenceDaysRemaining } from '../utils/schoolManagement';
 
 export default function AdminDashboard() {
   const { houses, students, attendance, wardens, getAttendanceSummary } = useData();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const today = new Date().toISOString().split('T')[0];
 
@@ -27,14 +30,12 @@ export default function AdminDashboard() {
     let nightPresent = 0, nightAbsent = 0, nightSick = 0, nightOD = 0, nightStaffWard = 0;
     
     houseSummaries.forEach((h: any) => {
-      // Morning stats
       morningPresent += h.present;
       morningAbsent += h.absent;
       morningSick += h.sick;
       morningOD += h.od;
       morningStaffWard += h.staffWard;
       
-      // Night stats
       nightPresent += h.nightSummary.present;
       nightAbsent += h.nightSummary.absent;
       nightSick += h.nightSummary.sick;
@@ -64,6 +65,32 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
           <p className="text-gray-500 text-sm">Overview of all houses - {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
+        {/* Licence Status */}
+        {(() => {
+          const daysRemaining = getLicenceDaysRemaining(user?.school_id || '');
+          if (daysRemaining < 0) {
+            return (
+              <div className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                <XCircle className="w-4 h-4" />
+                Licence Expired
+              </div>
+            );
+          } else if (daysRemaining < 30) {
+            return (
+              <div className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Licence expires in {daysRemaining} days
+              </div>
+            );
+          } else {
+            return (
+              <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Licence valid for {daysRemaining} days
+              </div>
+            );
+          }
+        })()}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm">
             <span>☀️</span><span>Morning: {houseSummaries.filter((h: any) => h.morningDone).length}/{totalStats.totalHouses}</span>
@@ -77,7 +104,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Morning Attendance Cards */}
+      {/* Morning Attendance Overview */}
       <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-200">
         <h3 className="text-sm font-semibold text-orange-800 mb-3 flex items-center gap-2">
           <span>☀️</span> Morning Attendance Overview
@@ -110,7 +137,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Night Attendance Cards */}
+      {/* Night Attendance Overview */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
         <h3 className="text-sm font-semibold text-indigo-800 mb-3 flex items-center gap-2">
           <span>🌙</span> Night Attendance Overview
@@ -166,6 +193,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* House-wise Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-5 border-b"><h3 className="font-semibold text-gray-800">House-wise Attendance Status</h3></div>
         <div className="overflow-x-auto">
@@ -195,7 +223,7 @@ export default function AdminDashboard() {
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 {house.nightDone ? '✓' : '⏳'}</span>
                     </div>
                   </td>
-                  <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</button></td>
+                  <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View Details</button></td>
                 </tr>
               ))}
             </tbody>

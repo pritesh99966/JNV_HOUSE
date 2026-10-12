@@ -4,8 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import MasterLogin from './pages/MasterLogin';
 import MasterDashboard from './pages/MasterDashboard';
+import SchoolAnalytics from './pages/SchoolAnalytics';
 import AdminDashboard from './pages/AdminDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import Students from './pages/Students';
@@ -13,8 +13,10 @@ import Attendance from './pages/Attendance';
 import AttendanceHistory from './pages/AttendanceHistory';
 import Wardens from './pages/Wardens';
 import Houses from './pages/Houses';
+import HouseDetails from './pages/HouseDetails';
 import Reports from './pages/Reports';
 import StudentMonthlyReport from './pages/StudentMonthlyReport';
+import ActivityLogs from './pages/ActivityLogs';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -115,22 +117,24 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to={getRedirectPath()} replace /> : <Login />} />
-      <Route path="/master-login" element={isAuthenticated && user?.role === 'master' ? <Navigate to="/master" replace /> : <MasterLogin />} />
       
       {/* Master Routes */}
       <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
+      <Route path="/master/school-analytics" element={<ProtectedRoute requiredRole="master"><SchoolAnalytics /></ProtectedRoute>} />
+      <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><Settings /></ProtectedRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/houses" element={<ProtectedRoute requiredRole="admin"><Houses /></ProtectedRoute>} />
+      <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetails /></ProtectedRoute>} />
       <Route path="/admin/students" element={<ProtectedRoute requiredRole="admin"><Students /></ProtectedRoute>} />
       <Route path="/admin/wardens" element={<ProtectedRoute requiredRole="admin"><Wardens /></ProtectedRoute>} />
       <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
       <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
       <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><StudentMonthlyReport /></ProtectedRoute>} />
+      <Route path="/admin/activity-logs" element={<ProtectedRoute requiredRole="admin"><ActivityLogs /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
-      <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetailsPage /></ProtectedRoute>} />
       
       {/* Warden Routes */}
       <Route path="/warden" element={<ProtectedRoute requiredRole="warden"><WardenDashboard /></ProtectedRoute>} />

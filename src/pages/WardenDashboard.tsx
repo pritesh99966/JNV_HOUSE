@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, UserX, CheckCircle2, Clock } from 'lucide-react';
+import { Users, UserCheck, UserX } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 export default function WardenDashboard() {
@@ -20,6 +20,22 @@ export default function WardenDashboard() {
   const percentage = morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0';
 
   if (!house) return <div className="text-center py-10 text-gray-500">No house assigned</div>;
+
+  const morningPieData = [
+    { name: 'Present', value: morningSummary.present },
+    { name: 'Absent', value: morningSummary.absent },
+    { name: 'Sick', value: morningSummary.sick },
+    { name: 'On Duty', value: morningSummary.od },
+    { name: 'Staff Ward', value: morningSummary.staffWard }
+  ].filter(item => item.value > 0);
+
+  const nightPieData = [
+    { name: 'Present', value: nightSummary.present },
+    { name: 'Absent', value: nightSummary.absent },
+    { name: 'Sick', value: nightSummary.sick },
+    { name: 'On Duty', value: nightSummary.od },
+    { name: 'Staff Ward', value: nightSummary.staffWard }
+  ].filter(item => item.value > 0);
 
   return (
     <div className="space-y-6">
@@ -170,13 +186,7 @@ export default function WardenDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[
-                    { name: 'Present', value: morningSummary.present },
-                    { name: 'Absent', value: morningSummary.absent },
-                    { name: 'Sick', value: morningSummary.sick },
-                    { name: 'On Duty', value: morningSummary.od },
-                    { name: 'Staff Ward', value: morningSummary.staffWard }
-                  ].filter(item => item.value > 0)}
+                  data={morningPieData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -207,13 +217,7 @@ export default function WardenDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[
-                    { name: 'Present', value: nightSummary.present },
-                    { name: 'Absent', value: nightSummary.absent },
-                    { name: 'Sick', value: nightSummary.sick },
-                    { name: 'On Duty', value: nightSummary.od },
-                    { name: 'Staff Ward', value: nightSummary.staffWard }
-                  ].filter(item => item.value > 0)}
+                  data={nightPieData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthUser, UserRole } from '../types';
+import { AuthUser } from '../types';
 import { getInitialData } from '../data/seedData';
 
 interface AuthContextType {
@@ -44,6 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     
     if (school) {
+      // Check licence expiry
+      if (school.licence_expiry_date) {
+        const today = new Date();
+        const expiry = new Date(school.licence_expiry_date);
+        if (expiry < today) {
+          return { 
+            success: false, 
+            message: 'Your license has expired. Please renew your license to continue using the system.' 
+          };
+        }
+      }
+      
       const schoolAdminUser: AuthUser = { 
         id: school.id, 
         name: school.admin_name, 
@@ -58,8 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true, message: 'School admin login successful' };
     }
     
-    // Warden Login - Search across all schools
+    // Warden Login
     for (const school of data.schools) {
+      // Check school licence first
+      if (school.licence_expiry_date) {
+        const today = new Date();
+        const expiry = new Date(school.licence_expiry_date);
+        if (expiry < today) {
+          continue; // Skip this school if licence expired
+        }
+      }
+      
       const schoolWardens = JSON.parse(localStorage.getItem(`hms_${school.id}_wardens`) || '[]');
       const warden = schoolWardens.find((w: any) => 
         (w.username === username || w.email === username) && 
@@ -90,7 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: false, message: 'Invalid username or password' };
   };
 
-  const logout = () => { setUser(null); localStorage.removeItem('hms_current_user'); };
+  const logout = () => { 
+    setUser(null); 
+    localStorage.removeItem('hms_current_user'); 
+  };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
