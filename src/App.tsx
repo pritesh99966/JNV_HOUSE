@@ -13,6 +13,7 @@ import Attendance from './pages/Attendance';
 import AttendanceHistory from './pages/AttendanceHistory';
 import Wardens from './pages/Wardens';
 import Houses from './pages/Houses';
+import HouseDetails from './pages/HouseDetails';
 import Reports from './pages/Reports';
 import StudentMonthlyReport from './pages/StudentMonthlyReport';
 import ActivityLogs from './pages/ActivityLogs';
@@ -125,6 +126,7 @@ function AppRoutes() {
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/houses" element={<ProtectedRoute requiredRole="admin"><Houses /></ProtectedRoute>} />
+      <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetails /></ProtectedRoute>} />
       <Route path="/admin/students" element={<ProtectedRoute requiredRole="admin"><Students /></ProtectedRoute>} />
       <Route path="/admin/wardens" element={<ProtectedRoute requiredRole="admin"><Wardens /></ProtectedRoute>} />
       <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
@@ -133,7 +135,6 @@ function AppRoutes() {
       <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><StudentMonthlyReport /></ProtectedRoute>} />
       <Route path="/admin/activity-logs" element={<ProtectedRoute requiredRole="admin"><ActivityLogs /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
-      <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><HouseDetailsPage /></ProtectedRoute>} />
       
       {/* Warden Routes */}
       <Route path="/warden" element={<ProtectedRoute requiredRole="warden"><WardenDashboard /></ProtectedRoute>} />

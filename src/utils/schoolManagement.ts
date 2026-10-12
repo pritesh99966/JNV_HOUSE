@@ -110,6 +110,166 @@ export function logAttendanceMarking(
   });
 }
 
+// Log student activities
+export function logStudentAdded(schoolId: string, userId: string, userName: string, studentName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'STUDENT_ADDED',
+    details: `New student added: ${studentName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logStudentUpdated(schoolId: string, userId: string, userName: string, studentName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'STUDENT_UPDATED',
+    details: `Student details updated: ${studentName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logStudentDeleted(schoolId: string, userId: string, userName: string, studentName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'STUDENT_DELETED',
+    details: `Student deleted: ${studentName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logStudentImported(schoolId: string, userId: string, userName: string, count: number): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'STUDENT_IMPORTED',
+    details: `Imported ${count} students from Excel at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+// Log house activities
+export function logHouseAdded(schoolId: string, userId: string, userName: string, houseName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'HOUSE_ADDED',
+    details: `New house added: ${houseName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logHouseUpdated(schoolId: string, userId: string, userName: string, houseName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'HOUSE_UPDATED',
+    details: `House updated: ${houseName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logHouseDeleted(schoolId: string, userId: string, userName: string, houseName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'warden',
+    school_id: schoolId,
+    action: 'HOUSE_DELETED',
+    details: `House deleted: ${houseName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+// Log warden activities
+export function logWardenAdded(schoolId: string, userId: string, userName: string, wardenName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'WARDEN_ADDED',
+    details: `New warden added: ${wardenName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logWardenUpdated(schoolId: string, userId: string, userName: string, wardenName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'WARDEN_UPDATED',
+    details: `Warden updated: ${wardenName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logWardenDeleted(schoolId: string, userId: string, userName: string, wardenName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'WARDEN_DELETED',
+    details: `Warden deleted: ${wardenName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+// Log report generation
+export function logReportGenerated(schoolId: string, userId: string, userName: string, reportType: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'REPORT_GENERATED',
+    details: `${reportType} report generated at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+// Log data export
+export function logDataExported(schoolId: string, userId: string, userName: string, dataType: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'DATA_EXPORTED',
+    details: `${dataType} data exported at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+// Log backup/restore
+export function logBackupCreated(schoolId: string, userId: string, userName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'BACKUP_CREATED',
+    details: `School data backup created at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
+export function logDataRestored(schoolId: string, userId: string, userName: string): void {
+  addActivityLog({
+    user_id: userId,
+    user_name: userName,
+    user_role: 'admin',
+    school_id: schoolId,
+    action: 'DATA_RESTORED',
+    details: `School data restored from backup at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+  });
+}
+
 // Get activity logs for a school
 export function getSchoolActivityLogs(schoolId: string, limit: number = 100): ActivityLog[] {
   const logs = JSON.parse(localStorage.getItem('hms_activity_logs') || '[]') as ActivityLog[];

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { Warden } from '../types';
 import { Plus, Edit2, Trash2, X, Shield, ShieldOff } from 'lucide-react';
+import { logWardenAdded, logWardenUpdated, logWardenDeleted } from '../utils/schoolManagement';
 
 export default function Wardens() {
   const { houses, wardens, addWarden, updateWarden, deleteWarden } = useData();
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingWarden, setEditingWarden] = useState<Warden | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -16,7 +19,15 @@ export default function Wardens() {
 
   const handleSave = () => {
     if (!formData.name || !formData.username || !formData.assigned_house_id) { setToast({ type: 'error', message: 'Fill required fields' }); setTimeout(() => setToast(null), 3000); return; }
-    if (editingWarden) { updateWarden(editingWarden.id, formData); setToast({ type: 'success', message: 'Updated' }); } else { addWarden(formData); setToast({ type: 'success', message: 'Added' }); }
+    if (editingWarden) { 
+      updateWarden(editingWarden.id, formData); 
+      logWardenUpdated(user?.school_id || '', user?.id || '', user?.name || '', formData.name);
+      setToast({ type: 'success', message: 'Updated' }); 
+    } else { 
+      addWarden(formData); 
+      logWardenAdded(user?.school_id || '', user?.id || '', user?.name || '', formData.name);
+      setToast({ type: 'success', message: 'Added' }); 
+    }
     setShowForm(false); setTimeout(() => setToast(null), 3000);
   };
 
@@ -81,7 +92,14 @@ export default function Wardens() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full"><h3 className="text-lg font-bold mb-2">Delete Warden?</h3><p className="text-sm text-gray-600 mb-4">This will permanently remove this warden.</p>
-            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { deleteWarden(showDeleteConfirm); setShowDeleteConfirm(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
+            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { 
+              const warden = wardens.find((w: Warden) => w.id === showDeleteConfirm);
+              deleteWarden(showDeleteConfirm); 
+              if (warden && user) {
+                logWardenDeleted(user.school_id || '', user.id || '', user.name || '', warden.name);
+              }
+              setShowDeleteConfirm(null); 
+            }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
           </div>
         </div>
       )}

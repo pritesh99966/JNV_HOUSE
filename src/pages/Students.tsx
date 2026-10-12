@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Student } from '../types';
 import * as XLSX from 'xlsx';
 import { Search, Plus, Upload, Download, Edit2, Trash2, Camera, X } from 'lucide-react';
+import { logStudentAdded, logStudentUpdated, logStudentDeleted, logStudentImported, logDataExported } from '../utils/schoolManagement';
 
 export default function Students() {
   const { user } = useAuth();
@@ -115,9 +116,11 @@ export default function Students() {
     }
     if (editingStudent) {
       updateStudent(editingStudent.id, formData);
+      logStudentUpdated(user?.school_id || '', user?.id || '', user?.name || '', formData.student_name);
       setToast({ type: 'success', message: 'Student updated' });
     } else {
       addStudent(formData);
+      logStudentAdded(user?.school_id || '', user?.id || '', user?.name || '', formData.student_name);
       setToast({ type: 'success', message: 'Student added' });
     }
     setShowForm(false);
@@ -162,6 +165,7 @@ export default function Students() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
+      logDataExported(user?.school_id || '', user?.id || '', user?.name || '', 'Students');
       setToast({ type: 'success', message: 'Students exported successfully' });
       setTimeout(() => setToast(null), 3000);
     } catch (error) {
@@ -206,6 +210,7 @@ export default function Students() {
 
       if (importedStudents.length > 0) {
         bulkImportStudents(importedStudents);
+        logStudentImported(user?.school_id || '', user?.id || '', user?.name || '', importedStudents.length);
         setToast({ type: 'success', message: `${importedStudents.length} students imported successfully` });
         setShowImportModal(false);
       } else {
@@ -393,7 +398,14 @@ export default function Students() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold mb-2">Delete Student?</h3><p className="text-sm text-gray-600 mb-4">This action cannot be undone.</p>
-            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { deleteStudent(showDeleteConfirm); setShowDeleteConfirm(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
+            <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { 
+            const student = students.find((s: Student) => s.id === showDeleteConfirm);
+            deleteStudent(showDeleteConfirm); 
+            if (student && user) {
+              logStudentDeleted(user.school_id || '', user.id || '', user.name || '', student.student_name);
+            }
+            setShowDeleteConfirm(null); 
+          }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
           </div>
         </div>
       )}

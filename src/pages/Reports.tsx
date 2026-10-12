@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Download, FileText, Printer } from 'lucide-react';
+import { logReportGenerated, logDataExported } from '../utils/schoolManagement';
 
 type ReportType = 'daily' | 'monthly' | 'house' | 'absent' | 'sick' | 'od' | 'staffward';
 
@@ -127,6 +128,7 @@ export default function Reports() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 100);
+      logDataExported(user?.school_id || '', user?.id || '', user?.name || '', 'Report (Excel)');
       showToast('success', `Excel file exported successfully (${reportData.length} records)`);
     } catch (error) {
       console.error('Excel export failed:', error);
@@ -164,6 +166,7 @@ export default function Reports() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 100);
+      logDataExported(user?.school_id || '', user?.id || '', user?.name || '', 'Report (CSV)');
       showToast('success', `CSV file exported successfully (${reportData.length} records)`);
     } catch (error) {
       console.error('CSV export failed:', error);
@@ -177,6 +180,7 @@ export default function Reports() {
       return;
     }
     try {
+      logReportGenerated(user?.school_id || '', user?.id || '', user?.name || '', reportTypes.find(r => r.value === reportType)?.label || 'Report');
       const headers = Object.keys(reportData[0] as Record<string, unknown>);
       const printWindow = window.open('', '_blank');
       if (!printWindow) {

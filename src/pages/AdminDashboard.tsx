@@ -223,7 +223,7 @@ export default function AdminDashboard() {
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 {house.nightDone ? '✓' : '⏳'}</span>
                     </div>
                   </td>
-                  <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</button></td>
+                  <td className="text-center px-3 py-3"><button onClick={() => navigate(`/admin/house/${house.id}`)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View Details</button></td>
                 </tr>
               ))}
             </tbody>
