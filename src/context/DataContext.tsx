@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School, Licence } from '../types';
+import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School } from '../types';
 import { getInitialData, saveToStorage, getSchoolData } from '../data/seedData';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
   schools: School[];
-  licences: Licence[];
   houses: House[];
   wardens: Warden[];
   students: Student[];
@@ -199,7 +198,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const activeStudents = data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
     return {
       present: records.filter((r: Attendance) => r.status === 'Present').length,
-      absent: records.filter((r: Attendance) => r.status === 'Absent').length,
+      absent: records.filter((r: Attendance) => r.status === 'Leave').length,
       sick: records.filter((r: Attendance) => r.status === 'Sick').length,
       od: records.filter((r: Attendance) => r.status === 'OD').length,
       staffWard: records.filter((r: Attendance) => r.status === 'Staff Ward').length,
@@ -210,7 +209,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider value={{ 
       schools: data.schools,
-      licences: data.licences,
       houses: data.houses, 
       wardens: data.wardens, 
       students: data.students, 

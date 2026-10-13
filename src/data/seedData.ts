@@ -1,4 +1,4 @@
-import { House, Warden, Student, Attendance, AttendanceSession, School, Licence } from '../types';
+import { House, Warden, Student, Attendance, AttendanceSession, School } from '../types';
 
 export const seedSchools: School[] = [
   {
@@ -83,33 +83,6 @@ export const seedSchools: School[] = [
   }
 ];
 
-export const seedLicences: Licence[] = [
-  {
-    id: 'lic_school1',
-    school_id: 'school1',
-    plan: 'Premium',
-    start_date: '2024-01-01',
-    expiry_date: '2025-12-31',
-    student_limit: 1000,
-    status: 'Active',
-    amount: 20000,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01'
-  },
-  {
-    id: 'lic_school2',
-    school_id: 'school2',
-    plan: 'Standard',
-    start_date: '2024-01-01',
-    expiry_date: '2025-06-30',
-    student_limit: 500,
-    status: 'Active',
-    amount: 10000,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01'
-  }
-];
-
 export const seedHouses: House[] = [
   { id: 'h1', house_name: 'Aravalli Sr Boys', category: 'Senior Boys', gender: 'Male', status: 'Active', created_at: '2024-01-01' },
   { id: 'h2', house_name: 'Nilgiri Sr Boys', category: 'Senior Boys', gender: 'Male', status: 'Active', created_at: '2024-01-01' },
@@ -148,7 +121,7 @@ function generateWardensForSchool(schoolId: string, schoolCode: string): Warden[
     username: `${schoolCode.toLowerCase()}_w${index + 1}`,
     email: `${schoolCode.toLowerCase()}_w${index + 1}@school.com`,
     mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-    password: `${schoolCode}@Warden#2024`,
+    password: `warden${schoolCode}`,
     assigned_house_id: w.house,
     status: 'Active' as const,
     photo_url: '',
@@ -236,8 +209,8 @@ function generateAttendance(students: Student[]): Attendance[] {
         if (rand < 0.82) {
           status = 'Present';
         } else if (rand < 0.90) {
-          status = 'Absent';
-          remark = 'Absent without leave';
+          status = 'Leave';
+          remark = 'Leave approved';
         } else if (rand < 0.95) {
           status = 'Sick';
           remark = 'Medical leave';
@@ -263,60 +236,14 @@ function generateAttendance(students: Student[]): Attendance[] {
 
 export const seedAttendance = generateAttendance(seedStudents);
 
-// Generate dummy activity logs
-function generateActivityLogs(): any[] {
-  const logs: any[] = [];
-  const actions = [
-    { action: 'LOGIN', details: 'Warden logged in to the system' },
-    { action: 'ATTENDANCE_MARKED', details: 'Morning attendance marked for 35 students' },
-    { action: 'ATTENDANCE_MARKED', details: 'Night attendance marked for 35 students' },
-    { action: 'STUDENT_ADDED', details: 'New student added: Rahul Kumar' },
-    { action: 'STUDENT_UPDATED', details: 'Student details updated: Amit Sharma' },
-    { action: 'STUDENT_IMPORTED', details: 'Imported 25 students from Excel file' },
-    { action: 'REPORT_GENERATED', details: 'Monthly attendance report generated' },
-    { action: 'LOGOUT', details: 'Warden logged out' }
-  ];
-
-  // Generate logs for each warden
-  seedWardens.forEach((warden, index) => {
-    const numLogs = 5 + Math.floor(Math.random() * 10); // 5-15 logs per warden
-    
-    for (let i = 0; i < numLogs; i++) {
-      const randomAction = actions[Math.floor(Math.random() * actions.length)];
-      const daysAgo = Math.floor(Math.random() * 7); // Last 7 days
-      const hoursAgo = Math.floor(Math.random() * 24);
-      const timestamp = new Date(Date.now() - (daysAgo * 24 * 60 * 60 * 1000) - (hoursAgo * 60 * 60 * 1000));
-      
-      logs.push({
-        id: `log_${Date.now()}_${index}_${i}`,
-        timestamp: timestamp.toISOString(),
-        user_id: warden.id,
-        user_name: warden.name,
-        user_role: 'warden',
-        school_id: 'school1', // All wardens belong to school1 for now
-        action: randomAction.action,
-        details: randomAction.details,
-        ip_address: '192.168.1.' + (100 + index)
-      });
-    }
-  });
-
-  // Sort by timestamp descending
-  return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-}
-
-export const seedActivityLogs = generateActivityLogs();
-
 export function getInitialData() {
   const schools = localStorage.getItem('hms_schools');
   if (!schools) {
     localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
-    localStorage.setItem('hms_licences', JSON.stringify(seedLicences));
     localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
     localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
     localStorage.setItem('hms_students', JSON.stringify(seedStudents));
     localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
-    localStorage.setItem('hms_activity_logs', JSON.stringify(seedActivityLogs));
     
     seedSchools.forEach(school => {
       localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
@@ -327,7 +254,6 @@ export function getInitialData() {
     
     return { 
       schools: seedSchools,
-      licences: seedLicences,
       houses: seedHouses, 
       wardens: seedWardens, 
       students: seedStudents, 
@@ -345,13 +271,8 @@ export function getInitialData() {
     }
   });
   
-  if (!localStorage.getItem('hms_licences')) {
-    localStorage.setItem('hms_licences', JSON.stringify(seedLicences));
-  }
-  
   return {
     schools: schoolsList,
-    licences: JSON.parse(localStorage.getItem('hms_licences') || '[]') as Licence[],
     houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
     wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
     students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],

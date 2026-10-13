@@ -4,7 +4,19 @@ import { useAuth } from '../context/AuthContext';
 import { Student, AttendanceStatus, AttendanceSession } from '../types';
 import { Save, RotateCcw, CheckCheck, AlertCircle, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { logAttendanceMarking } from '../utils/schoolManagement';
+
+const STATUS_OPTIONS: AttendanceStatus[] = ['Present', 'Leave', 'Sick', 'OD', 'Staff Ward', 'Absent(Missing)', 'NR', 'Suspended'];
+
+const STATUS_COLORS: Record<string, string> = {
+  Present: 'bg-green-100 text-green-700 border-green-300',
+  Leave: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+  Sick: 'bg-orange-100 text-orange-700 border-orange-300',
+  OD: 'bg-blue-100 text-blue-700 border-blue-300',
+  'Staff Ward': 'bg-purple-100 text-purple-700 border-purple-300',
+  'Absent(Missing)': 'bg-red-100 text-red-700 border-red-300',
+  NR: 'bg-gray-100 text-gray-700 border-gray-300',
+  Suspended: 'bg-pink-100 text-pink-700 border-pink-300'
+};
 
 export default function Attendance() {
   const { user } = useAuth();
@@ -20,6 +32,7 @@ export default function Attendance() {
   const [search, setSearch] = useState('');
   const [filterClass, setFilterClass] = useState('');
   const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceStatus>>({});
+  const [remarkData, setRemarkData] = useState<Record<string, string>>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -29,8 +42,14 @@ export default function Attendance() {
   useEffect(() => {
     const existing = getAttendanceForDate(selectedHouse, selectedDate, selectedSession);
     const data: Record<string, AttendanceStatus> = {};
-    existing.forEach((a: { student_id: string; status: AttendanceStatus }) => { data[a.student_id] = a.status; });
-    setAttendanceData(data); setHasChanges(false);
+    const remarks: Record<string, string> = {};
+    existing.forEach((a: { student_id: string; status: AttendanceStatus; remark: string }) => { 
+      data[a.student_id] = a.status;
+      remarks[a.student_id] = a.remark || '';
+    });
+    setAttendanceData(data);
+    setRemarkData(remarks);
+    setHasChanges(false);
   }, [selectedHouse, selectedDate, selectedSession, getAttendanceForDate]);
 
   const filteredStudents = useMemo(() => {
@@ -41,34 +60,61 @@ export default function Attendance() {
     });
   }, [houseStudents, search, filterClass]);
 
-  const handleStatusChange = (studentId: string, status: AttendanceStatus) => { setAttendanceData(prev => ({ ...prev, [studentId]: status })); setHasChanges(true); };
-  const markAllPresent = () => { const data: Record<string, AttendanceStatus> = {}; houseStudents.forEach((s: Student) => { data[s.id] = 'Present'; }); setAttendanceData(data); setHasChanges(true); };
-  const resetAttendance = () => { setAttendanceData({}); setHasChanges(true); };
+  const handleStatusChange = (studentId: string, status: AttendanceStatus) => { 
+    setAttendanceData(prev => ({ ...prev, [studentId]: status })); 
+    setHasChanges(true); 
+  };
+
+  const handleRemarkChange = (studentId: string, remark: string) => {
+    setRemarkData(prev => ({ ...prev, [studentId]: remark }));
+    setHasChanges(true);
+  };
+
+  const markAllPresent = () => { 
+    const data: Record<string, AttendanceStatus> = {}; 
+    houseStudents.forEach((s: Student) => { data[s.id] = 'Present'; }); 
+    setAttendanceData(data); 
+    setHasChanges(true); 
+  };
+
+  const resetAttendance = () => { 
+    setAttendanceData({}); 
+    setRemarkData({});
+    setHasChanges(true); 
+  };
 
   const handleSave = () => {
-    const records = Object.entries(attendanceData).map(([studentId, status]) => ({ student_id: studentId, house_id: selectedHouse, status, remark: '' }));
-    if (records.length === 0) { setToast({ type: 'warning', message: 'No data to save' }); setTimeout(() => setToast(null), 3000); return; }
-    bulkSaveAttendance(records, selectedDate, selectedSession, user?.id || 'admin');
-    setShowConfirm(false); setHasChanges(false);
-    
-    // Log attendance marking activity
-    if (user && selectedSession) {
-      logAttendanceMarking(
-        user.school_id || '',
-        user.id,
-        user.name,
-        selectedSession,
-        records.length
-      );
+    const records = Object.entries(attendanceData).map(([studentId, status]) => ({ 
+      student_id: studentId, 
+      house_id: selectedHouse, 
+      status, 
+      remark: remarkData[studentId] || '' 
+    }));
+    if (records.length === 0) { 
+      setToast({ type: 'warning', message: 'No data to save' }); 
+      setTimeout(() => setToast(null), 3000); 
+      return; 
     }
-    
-    setToast({ type: 'success', message: `${selectedSession} attendance saved for ${records.length} students` }); setTimeout(() => setToast(null), 3000);
+    bulkSaveAttendance(records, selectedDate, selectedSession, user?.id || 'admin');
+    setShowConfirm(false); 
+    setHasChanges(false);
+    setToast({ type: 'success', message: `${selectedSession} attendance saved for ${records.length} students` }); 
+    setTimeout(() => setToast(null), 3000);
   };
 
   const summary = useMemo(() => {
-    let present = 0, absent = 0, sick = 0, od = 0, staffWard = 0;
-    Object.values(attendanceData).forEach(status => { if (status === 'Present') present++; else if (status === 'Absent') absent++; else if (status === 'Sick') sick++; else if (status === 'OD') od++; else if (status === 'Staff Ward') staffWard++; });
-    return { present, absent, sick, od, staffWard, total: houseStudents.length, marked: present + absent + sick + od + staffWard };
+    let present = 0, leave = 0, sick = 0, od = 0, staffWard = 0, absentMissing = 0, nr = 0, suspended = 0;
+    Object.values(attendanceData).forEach(status => { 
+      if (status === 'Present') present++; 
+      else if (status === 'Leave') leave++; 
+      else if (status === 'Sick') sick++; 
+      else if (status === 'OD') od++; 
+      else if (status === 'Staff Ward') staffWard++;
+      else if (status === 'Absent(Missing)') absentMissing++;
+      else if (status === 'NR') nr++;
+      else if (status === 'Suspended') suspended++;
+    });
+    return { present, leave, sick, od, staffWard, absentMissing, nr, suspended, total: houseStudents.length, marked: present + leave + sick + od + staffWard + absentMissing + nr + suspended };
   }, [attendanceData, houseStudents]);
 
   const classes = [...new Set(houseStudents.map((s: Student) => s.class))].sort();
@@ -102,13 +148,15 @@ export default function Attendance() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="bg-green-50 rounded-lg p-3 text-center border border-green-100"><p className="text-xl font-bold text-green-700">{summary.present}</p><p className="text-xs text-green-600">Present</p></div>
-        <div className="bg-red-50 rounded-lg p-3 text-center border border-red-100"><p className="text-xl font-bold text-red-700">{summary.absent}</p><p className="text-xs text-red-600">Absent</p></div>
-        <div className="bg-yellow-50 rounded-lg p-3 text-center border border-yellow-100"><p className="text-xl font-bold text-yellow-700">{summary.sick}</p><p className="text-xs text-yellow-600">Sick</p></div>
+        <div className="bg-yellow-50 rounded-lg p-3 text-center border border-yellow-100"><p className="text-xl font-bold text-yellow-700">{summary.leave}</p><p className="text-xs text-yellow-600">Leave</p></div>
+        <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-100"><p className="text-xl font-bold text-orange-700">{summary.sick}</p><p className="text-xs text-orange-600">Sick</p></div>
         <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-100"><p className="text-xl font-bold text-blue-700">{summary.od}</p><p className="text-xs text-blue-600">OD</p></div>
         <div className="bg-purple-50 rounded-lg p-3 text-center border border-purple-100"><p className="text-xl font-bold text-purple-700">{summary.staffWard}</p><p className="text-xs text-purple-600">Staff Ward</p></div>
-        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200"><p className="text-xl font-bold text-gray-700">{summary.marked}/{summary.total}</p><p className="text-xs text-gray-600">Marked</p></div>
+        <div className="bg-red-50 rounded-lg p-3 text-center border border-red-100"><p className="text-xl font-bold text-red-700">{summary.absentMissing}</p><p className="text-xs text-red-600">Absent(Missing)</p></div>
+        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200"><p className="text-xl font-bold text-gray-700">{summary.nr}</p><p className="text-xs text-gray-600">NR</p></div>
+        <div className="bg-pink-50 rounded-lg p-3 text-center border border-pink-100"><p className="text-xl font-bold text-pink-700">{summary.suspended}</p><p className="text-xs text-pink-600">Suspended</p></div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -129,7 +177,8 @@ export default function Attendance() {
                 <th className="text-left px-3 py-3">Student</th>
                 <th className="text-left px-3 py-3 w-16">Class</th>
                 <th className="text-left px-3 py-3 w-16 hidden sm:table-cell">Bed</th>
-                {['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'].map(s => <th key={s} className="text-center px-2 py-3 text-xs">{s}</th>)}
+                {STATUS_OPTIONS.map(s => <th key={s} className="text-center px-2 py-3 text-xs">{s}</th>)}
+                <th className="text-left px-3 py-3 w-40">Remark</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -144,16 +193,25 @@ export default function Attendance() {
                   </td>
                   <td className="px-3 py-2.5 text-gray-600">{student.class}-{student.section}</td>
                   <td className="px-3 py-2.5 text-gray-600 hidden sm:table-cell">{student.bed_no || '-'}</td>
-                  {['Present', 'Absent', 'Sick', 'OD', 'Staff Ward'].map(status => (
+                  {STATUS_OPTIONS.map(status => (
                     <td key={status} className="text-center px-2 py-2.5">
                       <label className="cursor-pointer inline-flex items-center justify-center">
-                        <input type="radio" name={`att_${student.id}`} checked={attendanceData[student.id] === status} onChange={() => handleStatusChange(student.id, status as AttendanceStatus)} className="sr-only" />
-                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${attendanceData[student.id] === status ? 'bg-green-100 text-green-700 border-green-300' : 'border-gray-300 hover:border-gray-400'}`}>
+                        <input type="radio" name={`att_${student.id}`} checked={attendanceData[student.id] === status} onChange={() => handleStatusChange(student.id, status)} className="sr-only" />
+                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${attendanceData[student.id] === status ? STATUS_COLORS[status] + ' border-current' : 'border-gray-300 hover:border-gray-400'}`}>
                           {attendanceData[student.id] === status && <span className="w-3 h-3 rounded-full bg-current"></span>}
                         </span>
                       </label>
                     </td>
                   ))}
+                  <td className="px-3 py-2.5">
+                    <input 
+                      type="text" 
+                      value={remarkData[student.id] || ''}
+                      onChange={(e) => handleRemarkChange(student.id, e.target.value)}
+                      placeholder="Add remark..."
+                      className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -164,18 +222,23 @@ export default function Attendance() {
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold mb-2">Save {selectedSession} Attendance?</h3>
             <p className="text-sm text-gray-600 mb-4">Saving <strong>{selectedSession.toLowerCase()}</strong> attendance for <strong>{summary.marked}</strong> students in <strong>{house?.house_name}</strong> on <strong>{selectedDate}</strong>.</p>
-            <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center text-xs">
               <div className="bg-green-50 p-2 rounded"><span className="font-bold text-green-700">{summary.present}</span><br/>Present</div>
-              <div className="bg-red-50 p-2 rounded"><span className="font-bold text-red-700">{summary.absent}</span><br/>Absent</div>
-              <div className="bg-yellow-50 p-2 rounded"><span className="font-bold text-yellow-700">{summary.sick}</span><br/>Sick</div>
+              <div className="bg-yellow-50 p-2 rounded"><span className="font-bold text-yellow-700">{summary.leave}</span><br/>Leave</div>
+              <div className="bg-orange-50 p-2 rounded"><span className="font-bold text-orange-700">{summary.sick}</span><br/>Sick</div>
               <div className="bg-blue-50 p-2 rounded"><span className="font-bold text-blue-700">{summary.od}</span><br/>OD</div>
               <div className="bg-purple-50 p-2 rounded"><span className="font-bold text-purple-700">{summary.staffWard}</span><br/>Staff Ward</div>
-              <div className="bg-gray-50 p-2 rounded"><span className="font-bold text-gray-700">{summary.total - summary.marked}</span><br/>Unmarked</div>
+              <div className="bg-red-50 p-2 rounded"><span className="font-bold text-red-700">{summary.absentMissing}</span><br/>Absent(Missing)</div>
+              <div className="bg-gray-50 p-2 rounded"><span className="font-bold text-gray-700">{summary.nr}</span><br/>NR</div>
+              <div className="bg-pink-50 p-2 rounded"><span className="font-bold text-pink-700">{summary.suspended}</span><br/>Suspended</div>
             </div>
-            <div className="flex justify-end gap-3"><button onClick={() => setShowConfirm(false)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Confirm & Save</button></div>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowConfirm(false)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+              <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Confirm & Save</button>
+            </div>
           </div>
         </div>
       )}
