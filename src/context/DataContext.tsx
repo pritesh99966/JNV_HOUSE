@@ -198,7 +198,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const activeStudents = data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
     return {
       present: records.filter((r: Attendance) => r.status === 'Present').length,
-      absent: records.filter((r: Attendance) => r.status === 'Absent').length,
+      absent: records.filter((r: Attendance) => r.status === 'Leave').length,
       sick: records.filter((r: Attendance) => r.status === 'Sick').length,
       od: records.filter((r: Attendance) => r.status === 'OD').length,
       staffWard: records.filter((r: Attendance) => r.status === 'Staff Ward').length,

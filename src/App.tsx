@@ -4,6 +4,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Attendance from './pages/Attendance';
+import Students from './pages/Students';
+import Houses from './pages/Houses';
+import Wardens from './pages/Wardens';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
   const { isAuthenticated, user } = useAuth();
@@ -42,11 +46,11 @@ function AppRoutes() {
       <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><PlaceholderPage title="Master Settings" /></ProtectedRoute>} />
       
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Admin Dashboard" /></ProtectedRoute>} />
-      <Route path="/admin/houses" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Houses Management" /></ProtectedRoute>} />
+      <Route path="/admin/houses" element={<ProtectedRoute requiredRole="admin"><Houses /></ProtectedRoute>} />
       <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="House Details" /></ProtectedRoute>} />
-      <Route path="/admin/students" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Students Management" /></ProtectedRoute>} />
-      <Route path="/admin/wardens" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Wardens Management" /></ProtectedRoute>} />
-      <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Attendance" /></ProtectedRoute>} />
+      <Route path="/admin/students" element={<ProtectedRoute requiredRole="admin"><Students /></ProtectedRoute>} />
+      <Route path="/admin/wardens" element={<ProtectedRoute requiredRole="admin"><Wardens /></ProtectedRoute>} />
+      <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
       <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Attendance History" /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Reports" /></ProtectedRoute>} />
       <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Student Report" /></ProtectedRoute>} />
@@ -54,8 +58,8 @@ function AppRoutes() {
       <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Settings" /></ProtectedRoute>} />
       
       <Route path="/warden" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Warden Dashboard" /></ProtectedRoute>} />
-      <Route path="/warden/students" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="My Students" /></ProtectedRoute>} />
-      <Route path="/warden/attendance" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Daily Attendance" /></ProtectedRoute>} />
+      <Route path="/warden/students" element={<ProtectedRoute requiredRole="warden"><Students /></ProtectedRoute>} />
+      <Route path="/warden/attendance" element={<ProtectedRoute requiredRole="warden"><Attendance /></ProtectedRoute>} />
       <Route path="/warden/attendance-history" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Attendance History" /></ProtectedRoute>} />
       <Route path="/warden/reports" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Reports" /></ProtectedRoute>} />
       <Route path="/warden/student-report" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Student Report" /></ProtectedRoute>} />

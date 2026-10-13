@@ -209,8 +209,8 @@ function generateAttendance(students: Student[]): Attendance[] {
         if (rand < 0.82) {
           status = 'Present';
         } else if (rand < 0.90) {
-          status = 'Absent';
-          remark = 'Absent without leave';
+          status = 'Leave';
+          remark = 'Leave approved';
         } else if (rand < 0.95) {
           status = 'Sick';
           remark = 'Medical leave';
