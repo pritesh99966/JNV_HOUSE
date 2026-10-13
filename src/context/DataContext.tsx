@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School } from '../types';
-import { getInitialData, saveToStorage, getSchoolData } from '../data/seedData';
+import { getInitialData, saveToStorage, getSchoolData, seedHouses, seedWardens, seedStudents, seedAttendance } from '../data/seedData';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
@@ -72,6 +72,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updated = [...data.schools, newSchool];
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
+    
+    // Initialize school-specific data with seed data
+    const schoolId = newSchool.id;
+    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
+    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
+    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
+    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
   };
   
   const updateSchool = (id: string, updates: Partial<School>) => {
