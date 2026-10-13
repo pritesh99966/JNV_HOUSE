@@ -5,7 +5,7 @@ import { Download, Printer, FileText, Trophy, AlertTriangle, Calendar } from 'lu
 
 export default function StudentMonthlyReport() {
   const { user } = useAuth();
-  const { houses, students, attendance, wardens } = useData();
+  const { houses, students, attendance } = useData();
   const isAdmin = user?.role === 'admin';
   const assignedHouseId = user?.assigned_house_id || '';
   
@@ -38,33 +38,33 @@ export default function StudentMonthlyReport() {
       const count = (records: any[], status: string) => records.filter((r: any) => r.status === status).length;
       
       const morningPresent = count(morningRecords, 'Present');
-      const morningAbsent = count(morningRecords, 'Absent');
+      const morningLeave = count(morningRecords, 'Leave');
       const morningSick = count(morningRecords, 'Sick');
       const morningOD = count(morningRecords, 'OD');
       const morningSW = count(morningRecords, 'Staff Ward');
       
       const nightPresent = count(nightRecords, 'Present');
-      const nightAbsent = count(nightRecords, 'Absent');
+      const nightLeave = count(nightRecords, 'Leave');
       const nightSick = count(nightRecords, 'Sick');
       const nightOD = count(nightRecords, 'OD');
       const nightSW = count(nightRecords, 'Staff Ward');
       
       const totalPresent = morningPresent + nightPresent;
-      const totalAbsent = morningAbsent + nightAbsent;
+      const totalLeave = morningLeave + nightLeave;
       const totalSick = morningSick + nightSick;
       const totalOD = morningOD + nightOD;
       const totalSW = morningSW + nightSW;
       const totalRecords = monthRecords.length;
       
       const percentage = totalRecords > 0 ? ((totalPresent / totalRecords) * 100) : 0;
-      const leaveDays = (totalSick + totalOD + totalSW) / 2;
+      const leaveDays = (totalLeave + totalSick + totalOD + totalSW) / 2;
       
       return {
         student,
         house: house?.house_name || '',
-        morningPresent, morningAbsent, morningSick, morningOD, morningSW,
-        nightPresent, nightAbsent, nightSick, nightOD, nightSW,
-        totalPresent, totalAbsent, totalSick, totalOD, totalSW, totalRecords,
+        morningPresent, morningLeave, morningSick, morningOD, morningSW,
+        nightPresent, nightLeave, nightSick, nightOD, nightSW,
+        totalPresent, totalLeave, totalSick, totalOD, totalSW, totalRecords,
         percentage: parseFloat(percentage.toFixed(1)),
         leaveDays: parseFloat(leaveDays.toFixed(1)),
       };
@@ -77,7 +77,7 @@ export default function StudentMonthlyReport() {
       switch (sortBy) {
         case 'name': valA = a.student.student_name; valB = b.student.student_name; break;
         case 'present': valA = a.totalPresent; valB = b.totalPresent; break;
-        case 'absent': valA = a.totalAbsent; valB = b.totalAbsent; break;
+        case 'absent': valA = a.totalLeave; valB = b.totalLeave; break;
         case 'percentage': valA = a.percentage; valB = b.percentage; break;
         default: valA = a.percentage; valB = b.percentage;
       }
@@ -102,50 +102,51 @@ export default function StudentMonthlyReport() {
   }, [studentReports]);
 
   const handleExport = () => {
-    if (sortedReports.length === 0) { setToast({ type: 'error', message: 'No data to export' }); setTimeout(() => setToast(null), 3000); return; }
+    if (sortedReports.length === 0) {
+      setToast({ type: 'error', message: 'No data to export' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
     try {
       const data = sortedReports.map(r => ({
         'Sr No': r.student.sr_no || '',
-        'Admission No': r.student.admission_no,
         'Student Name': r.student.student_name,
         'Class': `${r.student.class}-${r.student.section}`,
         'House': r.house,
         'Morning Present': r.morningPresent,
-        'Morning Absent': r.morningAbsent,
+        'Morning Leave': r.morningLeave,
         'Morning Sick': r.morningSick,
         'Morning OD': r.morningOD,
+        'Morning Staff Ward': r.morningSW,
         'Night Present': r.nightPresent,
-        'Night Absent': r.nightAbsent,
+        'Night Leave': r.nightLeave,
         'Night Sick': r.nightSick,
         'Night OD': r.nightOD,
+        'Night Staff Ward': r.nightSW,
         'Total Present': r.totalPresent,
-        'Total Absent': r.totalAbsent,
-        'Total Sick (Days)': r.totalSick / 2,
-        'Total OD (Days)': r.totalOD / 2,
-        'Total Leave (Days)': r.leaveDays,
+        'Total Leave': r.totalLeave,
+        'Total Sick': r.totalSick,
+        'Total OD': r.totalOD,
+        'Total Staff Ward': r.totalSW,
+        'Leave Days': r.leaveDays,
         'Attendance %': r.percentage,
       }));
-      
+
       const headers = Object.keys(data[0]);
-      let html = '<table border="1"><thead><tr>';
-      headers.forEach(h => { html += `<th>${h}</th>`; });
-      html += '</tr></thead><tbody>';
+      let csv = headers.join(',') + '\n';
       data.forEach(row => {
-        html += '<tr>';
-        headers.forEach(h => { html += `<td>${(row as any)[h] ?? ''}</td>`; });
-        html += '</tr>';
+        csv += headers.map(h => `"${(row as any)[h]}"`).join(',') + '\n';
       });
-      html += '</tbody></table>';
-      
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `student_monthly_report_${selectedMonth}.xls`;
-      document.body.appendChild(a);
+      a.download = `student_monthly_report_${selectedMonth}.csv`;
       a.click();
-      document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
       setToast({ type: 'success', message: 'Report exported successfully' });
       setTimeout(() => setToast(null), 3000);
     } catch (error) {
@@ -156,71 +157,91 @@ export default function StudentMonthlyReport() {
   };
 
   const handlePrint = () => {
-    if (sortedReports.length === 0) { setToast({ type: 'error', message: 'No data to print' }); setTimeout(() => setToast(null), 3000); return; }
+    if (sortedReports.length === 0) {
+      setToast({ type: 'error', message: 'No data to print' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
     const printWindow = window.open('', '_blank');
-    if (!printWindow) { setToast({ type: 'error', message: 'Allow popups' }); setTimeout(() => setToast(null), 3000); return; }
-    
+    if (!printWindow) {
+      setToast({ type: 'error', message: 'Please allow popups' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
     const monthName = new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     
-    const html = `<!DOCTYPE html><html><head><title>Student Monthly Report - ${monthName}</title>
-    <style>
-      body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
-      h1 { color: #4f46e5; margin-bottom: 5px; }
-      .meta { color: #666; margin-bottom: 20px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-      th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
-      th { background-color: #f3f4f6; font-weight: bold; }
-      .morning { background-color: #fff7ed; }
-      .night { background-color: #eef2ff; }
-      .good { color: #059669; font-weight: bold; }
-      .bad { color: #dc2626; font-weight: bold; }
-      .section-header { background-color: #f97316; color: white; }
-      .section-header.night { background-color: #6366f1; }
-      @media print { body { padding: 0; } }
-    </style></head><body>
-    <h1>Student Monthly Attendance Report</h1>
-    <div class="meta"><p>Month: ${monthName} | Total Students: ${sortedReports.length} | Generated: ${new Date().toLocaleString()}</p></div>
-    <table>
-      <thead>
-        <tr>
-          <th rowspan="2">Sr</th>
-          <th rowspan="2">Name</th>
-          <th rowspan="2">Class</th>
-          <th colspan="5" class="section-header">☀️ Morning</th>
-          <th colspan="5" class="section-header night">🌙 Night</th>
-          <th colspan="4" class="section-header" style="background:#059669">Summary</th>
-        </tr>
-        <tr>
-          <th class="morning">P</th><th class="morning">A</th><th class="morning">Sick</th><th class="morning">OD</th><th class="morning">SW</th>
-          <th class="night">P</th><th class="night">A</th><th class="night">Sick</th><th class="night">OD</th><th class="night">SW</th>
-          <th>Present</th><th>Absent</th><th>Leave Days</th><th>%</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sortedReports.map(r => `
-          <tr>
-            <td>${r.student.sr_no || ''}</td>
-            <td style="text-align:left">${r.student.student_name}</td>
-            <td>${r.student.class}-${r.student.section}</td>
-            <td class="morning good">${r.morningPresent}</td>
-            <td class="morning bad">${r.morningAbsent}</td>
-            <td class="morning">${r.morningSick}</td>
-            <td class="morning">${r.morningOD}</td>
-            <td class="morning">${r.morningSW}</td>
-            <td class="night good">${r.nightPresent}</td>
-            <td class="night bad">${r.nightAbsent}</td>
-            <td class="night">${r.nightSick}</td>
-            <td class="night">${r.nightOD}</td>
-            <td class="night">${r.nightSW}</td>
-            <td class="good">${r.totalPresent}</td>
-            <td class="bad">${r.totalAbsent}</td>
-            <td>${r.leaveDays}</td>
-            <td class="${r.percentage >= 75 ? 'good' : 'bad'}">${r.percentage}%</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table></body></html>`;
-    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Student Monthly Report - ${monthName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
+          h1 { color: #4f46e5; margin-bottom: 5px; }
+          .meta { color: #666; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+          th { background-color: #f3f4f6; font-weight: bold; }
+          .morning { background-color: #fff7ed; }
+          .night { background-color: #eef2ff; }
+          .good { color: #059669; font-weight: bold; }
+          .bad { color: #dc2626; font-weight: bold; }
+          .section-header { background-color: #f97316; color: white; }
+          .section-header.night { background-color: #6366f1; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <h1>Student Monthly Attendance Report</h1>
+        <div class="meta">
+          <p>Month: ${monthName} | Total Students: ${sortedReports.length} | Generated: ${new Date().toLocaleString()}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2">Sr</th>
+              <th rowspan="2">Name</th>
+              <th rowspan="2">Class</th>
+              <th colspan="5" class="section-header">☀️ Morning</th>
+              <th colspan="5" class="section-header night">🌙 Night</th>
+              <th colspan="4" class="section-header" style="background:#059669">Summary</th>
+            </tr>
+            <tr>
+              <th class="morning">P</th><th class="morning">L</th><th class="morning">S</th><th class="morning">OD</th><th class="morning">SW</th>
+              <th class="night">P</th><th class="night">L</th><th class="night">S</th><th class="night">OD</th><th class="night">SW</th>
+              <th>Present</th><th>Leave</th><th>Leave Days</th><th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sortedReports.map(r => `
+              <tr>
+                <td>${r.student.sr_no || ''}</td>
+                <td style="text-align:left">${r.student.student_name}</td>
+                <td>${r.student.class}-${r.student.section}</td>
+                <td class="morning good">${r.morningPresent}</td>
+                <td class="morning">${r.morningLeave}</td>
+                <td class="morning">${r.morningSick}</td>
+                <td class="morning">${r.morningOD}</td>
+                <td class="morning">${r.morningSW}</td>
+                <td class="night good">${r.nightPresent}</td>
+                <td class="night">${r.nightLeave}</td>
+                <td class="night">${r.nightSick}</td>
+                <td class="night">${r.nightOD}</td>
+                <td class="night">${r.nightSW}</td>
+                <td class="good">${r.totalPresent}</td>
+                <td class="bad">${r.totalLeave}</td>
+                <td>${r.leaveDays}</td>
+                <td class="${r.percentage >= 75 ? 'good' : 'bad'}">${r.percentage}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
     printWindow.document.write(html);
     printWindow.document.close();
     printWindow.focus();
@@ -238,7 +259,13 @@ export default function StudentMonthlyReport() {
 
   return (
     <div className="space-y-6">
-      {toast && <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>{toast.message}</div>}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${
+          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -246,8 +273,12 @@ export default function StudentMonthlyReport() {
           <p className="text-gray-500 text-sm">Complete monthly attendance analysis for each student</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"><Download className="w-4 h-4" /> Export</button>
-          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"><Printer className="w-4 h-4" /> Print</button>
+          <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+            <Download className="w-4 h-4" /> Export
+          </button>
+          <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700">
+            <Printer className="w-4 h-4" /> Print
+          </button>
         </div>
       </div>
 
@@ -255,36 +286,61 @@ export default function StudentMonthlyReport() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Month</label>
-            <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            />
           </div>
           {isAdmin && (
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">House</label>
-              <select value={selectedHouse} onChange={e => setSelectedHouse(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+              <select
+                value={selectedHouse}
+                onChange={e => setSelectedHouse(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              >
                 <option value="">All Houses</option>
-                {houses.map((h: any) => <option key={h.id} value={h.id}>{h.house_name}</option>)}
+                {houses.map((h: any) => (
+                  <option key={h.id} value={h.id}>{h.house_name}</option>
+                ))}
               </select>
             </div>
           )}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Class</label>
-            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+            <select
+              value={selectedClass}
+              onChange={e => setSelectedClass(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
               <option value="">All Classes</option>
-              {classes.map(c => <option key={c} value={c}>Class {c}</option>)}
+              {classes.map(c => (
+                <option key={c} value={c}>Class {c}</option>
+              ))}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Sort By</label>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
               <option value="percentage">Attendance %</option>
               <option value="name">Name</option>
               <option value="present">Present Count</option>
-              <option value="absent">Absent Count</option>
+              <option value="absent">Leave Count</option>
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Order</label>
-            <select value={sortOrder} onChange={e => setSortOrder(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value as any)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
               <option value="desc">Descending (High → Low)</option>
               <option value="asc">Ascending (Low → High)</option>
             </select>
@@ -342,18 +398,20 @@ export default function StudentMonthlyReport() {
             <div className="space-y-2">
               {analytics.needAttention.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-4">All students above 75% ✓</p>
-              ) : analytics.needAttention.map((r, i) => (
-                <div key={r.student.id} className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 bg-red-400 text-white rounded-full flex items-center justify-center text-xs font-bold">{i + 1}</span>
-                    <div>
-                      <p className="text-sm font-medium">{r.student.student_name}</p>
-                      <p className="text-xs text-gray-500">{r.student.class}-{r.student.section}</p>
+              ) : (
+                analytics.needAttention.map((r, i) => (
+                  <div key={r.student.id} className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 bg-red-400 text-white rounded-full flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                      <div>
+                        <p className="text-sm font-medium">{r.student.student_name}</p>
+                        <p className="text-xs text-gray-500">{r.student.class}-{r.student.section}</p>
+                      </div>
                     </div>
+                    <span className="text-sm font-bold text-red-600">{r.percentage}%</span>
                   </div>
-                  <span className="text-sm font-bold text-red-600">{r.percentage}%</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -401,18 +459,18 @@ export default function StudentMonthlyReport() {
               <tr className="bg-gray-50 border-b">
                 <th colSpan={3}></th>
                 <th className="text-center px-2 py-1 text-xs text-green-700">P</th>
-                <th className="text-center px-2 py-1 text-xs text-red-700">A</th>
-                <th className="text-center px-2 py-1 text-xs text-yellow-700">Sick</th>
+                <th className="text-center px-2 py-1 text-xs text-yellow-700">L</th>
+                <th className="text-center px-2 py-1 text-xs text-orange-700">S</th>
                 <th className="text-center px-2 py-1 text-xs text-blue-700">OD</th>
                 <th className="text-center px-2 py-1 text-xs text-purple-700">SW</th>
                 <th className="text-center px-2 py-1 text-xs text-green-700">P</th>
-                <th className="text-center px-2 py-1 text-xs text-red-700">A</th>
-                <th className="text-center px-2 py-1 text-xs text-yellow-700">Sick</th>
+                <th className="text-center px-2 py-1 text-xs text-yellow-700">L</th>
+                <th className="text-center px-2 py-1 text-xs text-orange-700">S</th>
                 <th className="text-center px-2 py-1 text-xs text-blue-700">OD</th>
                 <th className="text-center px-2 py-1 text-xs text-purple-700">SW</th>
                 <th className="text-center px-2 py-1 text-xs text-green-700">Total P</th>
-                <th className="text-center px-2 py-1 text-xs text-red-700">Total A</th>
-                <th className="text-center px-2 py-1 text-xs text-yellow-700">Leave Days</th>
+                <th className="text-center px-2 py-1 text-xs text-yellow-700">Total L</th>
+                <th className="text-center px-2 py-1 text-xs text-orange-700">Leave Days</th>
                 <th className="text-center px-2 py-1 text-xs text-gray-700">%</th>
               </tr>
             </thead>
@@ -422,45 +480,57 @@ export default function StudentMonthlyReport() {
                   <td className="px-3 py-2 text-xs">{r.student.sr_no || idx + 1}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
-                      {r.student.photo_url ? <img src={r.student.photo_url} alt="" className="w-7 h-7 rounded-full object-cover" /> : <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-bold">{r.student.student_name.charAt(0)}</div>}
+                      {r.student.photo_url ? (
+                        <img src={r.student.photo_url} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-bold">
+                          {r.student.student_name.charAt(0)}
+                        </div>
+                      )}
                       <span className="font-medium text-xs">{r.student.student_name}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-xs">{r.student.class}-{r.student.section}</td>
                   <td className="text-center px-2 py-2 text-xs text-green-600 font-medium bg-orange-50/30">{r.morningPresent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-red-600 font-medium bg-orange-50/30">{r.morningAbsent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-yellow-600 bg-orange-50/30">{r.morningSick}</td>
+                  <td className="text-center px-2 py-2 text-xs text-yellow-600 bg-orange-50/30">{r.morningLeave}</td>
+                  <td className="text-center px-2 py-2 text-xs text-orange-600 bg-orange-50/30">{r.morningSick}</td>
                   <td className="text-center px-2 py-2 text-xs text-blue-600 bg-orange-50/30">{r.morningOD}</td>
                   <td className="text-center px-2 py-2 text-xs text-purple-600 bg-orange-50/30">{r.morningSW}</td>
                   <td className="text-center px-2 py-2 text-xs text-green-600 font-medium bg-indigo-50/30">{r.nightPresent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-red-600 font-medium bg-indigo-50/30">{r.nightAbsent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-yellow-600 bg-indigo-50/30">{r.nightSick}</td>
+                  <td className="text-center px-2 py-2 text-xs text-yellow-600 bg-indigo-50/30">{r.nightLeave}</td>
+                  <td className="text-center px-2 py-2 text-xs text-orange-600 bg-indigo-50/30">{r.nightSick}</td>
                   <td className="text-center px-2 py-2 text-xs text-blue-600 bg-indigo-50/30">{r.nightOD}</td>
                   <td className="text-center px-2 py-2 text-xs text-purple-600 bg-indigo-50/30">{r.nightSW}</td>
                   <td className="text-center px-2 py-2 text-xs text-green-600 font-bold">{r.totalPresent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-red-600 font-bold">{r.totalAbsent}</td>
-                  <td className="text-center px-2 py-2 text-xs text-yellow-700 font-bold">{r.leaveDays}</td>
+                  <td className="text-center px-2 py-2 text-xs text-yellow-600 font-bold">{r.totalLeave}</td>
+                  <td className="text-center px-2 py-2 text-xs text-orange-700 font-bold">{r.leaveDays}</td>
                   <td className="text-center px-2 py-2">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${getPercentageColor(r.percentage)}`}>{r.percentage}%</span>
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${getPercentageColor(r.percentage)}`}>
+                      {r.percentage}%
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {sortedReports.length === 0 && <div className="text-center py-10 text-gray-500">No data available</div>}
+        {sortedReports.length === 0 && (
+          <div className="text-center py-10 text-gray-500">No data available</div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <h4 className="font-semibold text-gray-800 mb-2 text-sm">Legend:</h4>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
           <div><span className="font-bold text-green-600">P</span> = Present</div>
-          <div><span className="font-bold text-red-600">A</span> = Absent</div>
-          <div><span className="font-bold text-yellow-600">Sick</span> = Sick Leave</div>
+          <div><span className="font-bold text-yellow-600">L</span> = Leave</div>
+          <div><span className="font-bold text-orange-600">S</span> = Sick</div>
           <div><span className="font-bold text-blue-600">OD</span> = On Duty</div>
           <div><span className="font-bold text-purple-600">SW</span> = Staff Ward</div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">📝 Leave Days = (Sick + OD + Staff Ward) / 2 (Morning + Night sessions = 1 day)</p>
+        <p className="text-xs text-gray-500 mt-2">
+          📝 Leave Days = (Leave + Sick + OD + Staff Ward) / 2 (Morning + Night sessions = 1 day)
+        </p>
       </div>
     </div>
   );

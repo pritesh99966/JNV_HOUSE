@@ -1,66 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useData } from '../context/DataContext';
-import { 
-  updateSchoolLicence, 
-  getLicenceDaysRemaining, 
-  formatLastLogin, 
-  formatTimeSpent 
-} from '../utils/schoolManagement';
-import { Calendar, Clock, Users, Activity, Edit2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Users, Building2, Activity, School as SchoolIcon, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function SchoolAnalytics() {
-  const { schools, students, wardens, houses } = useData();
-  const [editingSchool, setEditingSchool] = useState<string | null>(null);
-  const [licenceForm, setLicenceForm] = useState({
-    start_date: '',
-    expiry_date: '',
-    status: 'Active' as 'Active' | 'Expired' | 'Suspended'
-  });
-  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
+  const { schools, students, wardens, houses, attendance } = useData();
 
   const schoolStats = useMemo(() => {
-    return schools.map(school => {
+    return schools.map((school: any) => {
       const schoolStudents = students.filter((s: any) => s.school_id === school.id || !s.school_id).length;
       const schoolWardens = wardens.filter((w: any) => w.school_id === school.id || !w.school_id).length;
       const schoolHouses = houses.filter((h: any) => h.school_id === school.id || !h.school_id).length;
-      const daysRemaining = getLicenceDaysRemaining(school.id);
+      const schoolAttendance = attendance.filter((a: any) => a.school_id === school.id || !a.school_id).length;
+      
+      // Calculate licence days remaining
+      let daysRemaining = 0;
+      if (school.licence_expiry_date) {
+        const today = new Date();
+        const expiry = new Date(school.licence_expiry_date);
+        const diffTime = expiry.getTime() - today.getTime();
+        daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
       
       return {
         ...school,
         studentCount: schoolStudents,
         wardenCount: schoolWardens,
         houseCount: schoolHouses,
+        attendanceCount: schoolAttendance,
         daysRemaining,
         licenceStatus: daysRemaining > 30 ? 'Active' : daysRemaining > 0 ? 'Expiring Soon' : 'Expired'
       };
     });
-  }, [schools, students, wardens, houses]);
-
-  const handleEditLicence = (schoolId: string) => {
-    const school = schools.find((s: any) => s.id === schoolId);
-    if (school) {
-      setLicenceForm({
-        start_date: school.licence_start_date || new Date().toISOString().split('T')[0],
-        expiry_date: school.licence_expiry_date || '',
-        status: school.licence_status || 'Active'
-      });
-      setEditingSchool(schoolId);
-    }
-  };
-
-  const handleSaveLicence = () => {
-    if (!editingSchool || !licenceForm.start_date || !licenceForm.expiry_date) {
-      setToast({ type: 'error', message: 'Please fill all fields' });
-      setTimeout(() => setToast(null), 3000);
-      return;
-    }
-
-    updateSchoolLicence(editingSchool, licenceForm.start_date, licenceForm.expiry_date, licenceForm.status);
-    setToast({ type: 'success', message: 'Licence updated successfully' });
-    setEditingSchool(null);
-    setTimeout(() => setToast(null), 3000);
-    window.location.reload();
-  };
+  }, [schools, students, wardens, houses, attendance]);
 
   const getLicenceColor = (days: number) => {
     if (days < 0) return 'text-red-600 bg-red-50';
@@ -76,14 +47,6 @@ export default function SchoolAnalytics() {
 
   return (
     <div className="space-y-6">
-      {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${
-          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
-          {toast.message}
-        </div>
-      )}
-
       <div>
         <h1 className="text-2xl font-bold text-gray-800">School Analytics</h1>
         <p className="text-gray-500 text-sm">Monitor all schools and their activities</p>
@@ -94,7 +57,7 @@ export default function SchoolAnalytics() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-600" />
+              <SchoolIcon className="w-6 h-6 text-purple-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{schools.length}</p>
@@ -154,7 +117,7 @@ export default function SchoolAnalytics() {
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Licence</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Last Login</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Time Spent</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Actions</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -176,6 +139,7 @@ export default function SchoolAnalytics() {
                   </td>
                   <td className="text-center px-4 py-3">
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                      <Building2 className="w-3 h-3" />
                       {school.houseCount}
                     </span>
                   </td>
@@ -186,25 +150,17 @@ export default function SchoolAnalytics() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-xs">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {formatLastLogin(school.last_login)}
-                    </div>
+                    {school.last_login ? new Date(school.last_login).toLocaleDateString() : 'Never'}
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-xs">
-                    <div className="flex items-center gap-1">
-                      <Activity className="w-3 h-3" />
-                      {formatTimeSpent(school.total_time_spent || 0)}
-                    </div>
+                    {school.total_time_spent ? `${Math.floor(school.total_time_spent / 60)}h ${school.total_time_spent % 60}m` : '0h 0m'}
                   </td>
                   <td className="text-center px-4 py-3">
-                    <button 
-                      onClick={() => handleEditLicence(school.id)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-medium hover:bg-indigo-100"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                      Edit Licence
-                    </button>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      school.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}>
+                      {school.status}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -212,60 +168,6 @@ export default function SchoolAnalytics() {
           </table>
         </div>
       </div>
-
-      {/* Edit Licence Modal */}
-      {editingSchool && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-5 border-b">
-              <h2 className="text-lg font-bold">Edit School Licence</h2>
-              <button onClick={() => setEditingSchool(null)} className="text-gray-400 hover:text-gray-600">
-                <XCircle className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                <input 
-                  type="date" 
-                  value={licenceForm.start_date}
-                  onChange={e => setLicenceForm({ ...licenceForm, start_date: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                <input 
-                  type="date" 
-                  value={licenceForm.expiry_date}
-                  onChange={e => setLicenceForm({ ...licenceForm, expiry_date: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select 
-                  value={licenceForm.status}
-                  onChange={e => setLicenceForm({ ...licenceForm, status: e.target.value as any })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Suspended">Suspended</option>
-                  <option value="Expired">Expired</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 p-5 border-t">
-              <button onClick={() => setEditingSchool(null)} className="px-4 py-2 border rounded-lg text-sm">
-                Cancel
-              </button>
-              <button onClick={handleSaveLicence} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
