@@ -17,6 +17,7 @@ import StudentMonthlyReport from './pages/StudentMonthlyReport';
 import ActivityLogs from './pages/ActivityLogs';
 import HouseDetails from './pages/HouseDetails';
 import SchoolAnalytics from './pages/SchoolAnalytics';
+import SchoolActivityLogs from './pages/SchoolActivityLogs';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -43,6 +44,7 @@ function AppRoutes() {
       
       <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
       <Route path="/master/school-analytics" element={<ProtectedRoute requiredRole="master"><SchoolAnalytics /></ProtectedRoute>} />
+      <Route path="/master/school-activity-logs/:schoolId" element={<ProtectedRoute requiredRole="master"><SchoolActivityLogs /></ProtectedRoute>} />
       <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><Settings /></ProtectedRoute>} />
       
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
