@@ -147,7 +147,7 @@ function generateStudentsForSchool(schoolId: string): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 20; // Reduced from 35 to save storage
+    const count = 10; // Reduced from 20 to 10 to save storage
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -179,21 +179,15 @@ function generateStudentsForSchool(schoolId: string): Student[] {
   return students;
 }
 
-// Generate students for all schools
-export const seedStudents: Student[] = [
-  ...generateStudentsForSchool('school1'),
-  ...generateStudentsForSchool('school2'),
-  ...generateStudentsForSchool('school3'),
-  ...generateStudentsForSchool('school4'),
-  ...generateStudentsForSchool('school5')
-];
+// Generate students for only school1 (other schools will be empty initially)
+export const seedStudents: Student[] = generateStudentsForSchool('school1');
 
 function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
   const dates: string[] = [];
-  // Only generate 3 days of attendance data to save storage
-  for (let d = 2; d >= 0; d--) {
+  // Only generate 2 days of attendance data to save storage
+  for (let d = 1; d >= 0; d--) {
     const date = new Date();
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
@@ -322,14 +316,73 @@ export function saveToStorage(key: string, data: any) {
   } catch (e) {
     // If storage is full, try to cleanup old attendance data
     if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      console.warn('Storage quota exceeded, attempting cleanup...');
+      
       if (key.includes('_attendance')) {
-        // Keep only last 3 days of attendance
+        // Keep only last 2 days of attendance
         const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - 3);
+        cutoffDate.setDate(cutoffDate.getDate() - 2);
         const cutoff = cutoffDate.toISOString().split('T')[0];
         const filtered = (data as any[]).filter((item: any) => item.attendance_date >= cutoff);
-        localStorage.setItem(`hms_${key}`, JSON.stringify(filtered));
+        try {
+          localStorage.setItem(`hms_${key}`, JSON.stringify(filtered));
+        } catch (e2) {
+          console.error('Failed to save even after cleanup:', e2);
+        }
+      } else {
+        // For other data types, try to clear old data from all schools
+        try {
+          const keys = Object.keys(localStorage);
+          const attendanceKeys = keys.filter(k => k.includes('_attendance'));
+          // Keep only the most recent attendance data
+          attendanceKeys.forEach(attendanceKey => {
+            const attendanceData = JSON.parse(localStorage.getItem(attendanceKey) || '[]');
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 2);
+            const cutoff = cutoffDate.toISOString().split('T')[0];
+            const filtered = attendanceData.filter((item: any) => item.attendance_date >= cutoff);
+            localStorage.setItem(attendanceKey, JSON.stringify(filtered));
+          });
+          // Try to save again
+          localStorage.setItem(`hms_${key}`, JSON.stringify(data));
+        } catch (e2) {
+          console.error('Failed to save even after aggressive cleanup:', e2);
+        }
       }
     }
   }
+}
+
+// Utility function to check available storage
+export function checkStorageQuota(): { used: number; available: number; percentage: number } {
+  let used = 0;
+  for (let key in localStorage) {
+    if (localStorage.hasOwnProperty(key)) {
+      used += localStorage.getItem(key)?.length || 0;
+    }
+  }
+  const available = 5 * 1024 * 1024; // 5MB in bytes
+  const percentage = (used / available) * 100;
+  return { used, available, percentage };
+}
+
+// Utility function to cleanup old data
+export function cleanupOldData(daysToKeep: number = 2): number {
+  const keys = Object.keys(localStorage);
+  const attendanceKeys = keys.filter(k => k.includes('_attendance'));
+  let totalRemoved = 0;
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  const cutoff = cutoffDate.toISOString().split('T')[0];
+  
+  attendanceKeys.forEach(attendanceKey => {
+    const attendanceData = JSON.parse(localStorage.getItem(attendanceKey) || '[]');
+    const originalLength = attendanceData.length;
+    const filtered = attendanceData.filter((item: any) => item.attendance_date >= cutoff);
+    localStorage.setItem(attendanceKey, JSON.stringify(filtered));
+    totalRemoved += originalLength - filtered.length;
+  });
+  
+  return totalRemoved;
 }

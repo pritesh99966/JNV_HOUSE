@@ -73,12 +73,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
     
-    // Initialize school-specific data with seed data
+    // Initialize school-specific data with EMPTY arrays (not seed data)
+    // School admin will add their own data
     const schoolId = newSchool.id;
-    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
-    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
-    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
-    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
+    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify([]));
   };
   
   const updateSchool = (id: string, updates: Partial<School>) => {
