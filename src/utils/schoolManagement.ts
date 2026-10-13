@@ -428,3 +428,35 @@ export function uploadBackup(file: File): Promise<any> {
     reader.readAsText(file);
   });
 }
+
+// Cleanup old attendance data to free up storage
+export function cleanupOldAttendance(schoolId: string, daysToKeep: number = 7): number {
+  const attendanceKey = `hms_${schoolId}_attendance`;
+  const attendance = JSON.parse(localStorage.getItem(attendanceKey) || '[]');
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  const cutoff = cutoffDate.toISOString().split('T')[0];
+  
+  const filtered = attendance.filter((a: any) => a.attendance_date >= cutoff);
+  const removed = attendance.length - filtered.length;
+  
+  localStorage.setItem(attendanceKey, JSON.stringify(filtered));
+  
+  return removed;
+}
+
+// Check storage usage and cleanup if needed
+export function checkAndCleanupStorage(schoolId: string): void {
+  try {
+    // Try to save a test item to check if storage is full
+    const testKey = `hms_${schoolId}_test`;
+    localStorage.setItem(testKey, 'test');
+    localStorage.removeItem(testKey);
+  } catch (e) {
+    // Storage is full, cleanup old data
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      cleanupOldAttendance(schoolId, 3); // Keep only last 3 days
+    }
+  }
+}

@@ -147,7 +147,7 @@ function generateStudentsForSchool(schoolId: string): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 35;
+    const count = 20; // Reduced from 35 to save storage
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -192,7 +192,8 @@ function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
   const dates: string[] = [];
-  for (let d = 6; d >= 0; d--) {
+  // Only generate 3 days of attendance data to save storage
+  for (let d = 2; d >= 0; d--) {
     const date = new Date();
     date.setDate(date.getDate() - d);
     dates.push(date.toISOString().split('T')[0]);
@@ -316,5 +317,19 @@ export function getSchoolData(schoolId: string) {
 }
 
 export function saveToStorage(key: string, data: any) {
-  localStorage.setItem(`hms_${key}`, JSON.stringify(data));
+  try {
+    localStorage.setItem(`hms_${key}`, JSON.stringify(data));
+  } catch (e) {
+    // If storage is full, try to cleanup old attendance data
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      if (key.includes('_attendance')) {
+        // Keep only last 3 days of attendance
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 3);
+        const cutoff = cutoffDate.toISOString().split('T')[0];
+        const filtered = (data as any[]).filter((item: any) => item.attendance_date >= cutoff);
+        localStorage.setItem(`hms_${key}`, JSON.stringify(filtered));
+      }
+    }
+  }
 }
