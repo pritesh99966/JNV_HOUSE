@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, UserCheck, UserX } from 'lucide-react';
 
 export default function HouseDetails() {
   const { id } = useParams<{ id: string }>();
   const { houses, students, attendance } = useData();
-  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const house = houses.find((h: any) => h.id === id);
@@ -35,20 +33,23 @@ export default function HouseDetails() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Present': return 'bg-green-100 text-green-700';
-      case 'Absent': return 'bg-red-100 text-red-700';
-      case 'Sick': return 'bg-yellow-100 text-yellow-700';
+      case 'Leave': return 'bg-yellow-100 text-yellow-700';
+      case 'Sick': return 'bg-orange-100 text-orange-700';
       case 'OD': return 'bg-blue-100 text-blue-700';
       case 'Staff Ward': return 'bg-purple-100 text-purple-700';
+      case 'Absent(Missing)': return 'bg-red-100 text-red-700';
+      case 'NR': return 'bg-gray-100 text-gray-700';
+      case 'Suspended': return 'bg-pink-100 text-pink-700';
       default: return 'bg-gray-100 text-gray-500';
     }
   };
 
   const getChangeIcon = (morningStatus: string, nightStatus: string) => {
-    if (morningStatus === 'Present' && nightStatus === 'Absent') {
-      return <div title="Present → Absent"><ArrowRight className="w-4 h-4 text-red-500" /></div>;
+    if (morningStatus === 'Present' && nightStatus !== 'Present') {
+      return <div title="Present → Not Present"><ArrowRight className="w-4 h-4 text-red-500" /></div>;
     }
-    if (morningStatus === 'Absent' && nightStatus === 'Present') {
-      return <div title="Absent → Present"><ArrowLeft className="w-4 h-4 text-green-500" /></div>;
+    if (morningStatus !== 'Present' && nightStatus === 'Present') {
+      return <div title="Not Present → Present"><ArrowLeft className="w-4 h-4 text-green-500" /></div>;
     }
     if (morningStatus === nightStatus) {
       return <span className="text-gray-400">—</span>;
@@ -58,7 +59,7 @@ export default function HouseDetails() {
 
   const morningStats = useMemo(() => ({
     present: morningAttendance.filter((a: any) => a.status === 'Present').length,
-    absent: morningAttendance.filter((a: any) => a.status === 'Absent').length,
+    leave: morningAttendance.filter((a: any) => a.status === 'Leave').length,
     sick: morningAttendance.filter((a: any) => a.status === 'Sick').length,
     od: morningAttendance.filter((a: any) => a.status === 'OD').length,
     staffWard: morningAttendance.filter((a: any) => a.status === 'Staff Ward').length,
@@ -66,7 +67,7 @@ export default function HouseDetails() {
 
   const nightStats = useMemo(() => ({
     present: nightAttendance.filter((a: any) => a.status === 'Present').length,
-    absent: nightAttendance.filter((a: any) => a.status === 'Absent').length,
+    leave: nightAttendance.filter((a: any) => a.status === 'Leave').length,
     sick: nightAttendance.filter((a: any) => a.status === 'Sick').length,
     od: nightAttendance.filter((a: any) => a.status === 'OD').length,
     staffWard: nightAttendance.filter((a: any) => a.status === 'Staff Ward').length,
@@ -125,11 +126,11 @@ export default function HouseDetails() {
               <p className="text-xs text-gray-600">Present</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-red-600">{morningStats.absent}</p>
-              <p className="text-xs text-gray-600">Absent</p>
+              <p className="text-2xl font-bold text-yellow-600">{morningStats.leave}</p>
+              <p className="text-xs text-gray-600">Leave</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-yellow-600">{morningStats.sick}</p>
+              <p className="text-2xl font-bold text-orange-600">{morningStats.sick}</p>
               <p className="text-xs text-gray-600">Sick</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
@@ -158,11 +159,11 @@ export default function HouseDetails() {
               <p className="text-xs text-gray-600">Present</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-red-600">{nightStats.absent}</p>
-              <p className="text-xs text-gray-600">Absent</p>
+              <p className="text-2xl font-bold text-yellow-600">{nightStats.leave}</p>
+              <p className="text-xs text-gray-600">Leave</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-yellow-600">{nightStats.sick}</p>
+              <p className="text-2xl font-bold text-orange-600">{nightStats.sick}</p>
               <p className="text-xs text-gray-600">Sick</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
@@ -189,21 +190,21 @@ export default function HouseDetails() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div className="bg-white rounded-lg p-3">
-              <p className="text-xs text-gray-600 mb-1">Present → Absent</p>
+              <p className="text-xs text-gray-600 mb-1">Present → Not Present</p>
               <p className="text-xl font-bold text-red-600">
-                {changes.filter(c => c.morningStatus === 'Present' && c.nightStatus === 'Absent').length}
+                {changes.filter(c => c.morningStatus === 'Present' && c.nightStatus !== 'Present').length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3">
-              <p className="text-xs text-gray-600 mb-1">Absent → Present</p>
+              <p className="text-xs text-gray-600 mb-1">Not Present → Present</p>
               <p className="text-xl font-bold text-green-600">
-                {changes.filter(c => c.morningStatus === 'Absent' && c.nightStatus === 'Present').length}
+                {changes.filter(c => c.morningStatus !== 'Present' && c.nightStatus === 'Present').length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3">
               <p className="text-xs text-gray-600 mb-1">Other Changes</p>
               <p className="text-xl font-bold text-blue-600">
-                {changes.filter(c => !((c.morningStatus === 'Present' && c.nightStatus === 'Absent') || (c.morningStatus === 'Absent' && c.nightStatus === 'Present'))).length}
+                {changes.filter(c => !((c.morningStatus === 'Present' && c.nightStatus !== 'Present') || (c.morningStatus !== 'Present' && c.nightStatus === 'Present'))).length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3">

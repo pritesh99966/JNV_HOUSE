@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, UserX, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Users, UserCheck, UserX, CheckCircle2, XCircle, AlertTriangle, Building2 } from 'lucide-react';
 import { getLicenceDaysRemaining } from '../utils/schoolManagement';
 
 export default function AdminDashboard() {
@@ -58,6 +58,8 @@ export default function AdminDashboard() {
     };
   }, [houseSummaries, students]);
 
+  const daysRemaining = getLicenceDaysRemaining(user?.school_id || '');
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -65,33 +67,23 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
           <p className="text-gray-500 text-sm">Overview of all houses - {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
-        {/* Licence Status */}
-        {(() => {
-          const daysRemaining = getLicenceDaysRemaining(user?.school_id || '');
-          if (daysRemaining < 0) {
-            return (
-              <div className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                <XCircle className="w-4 h-4" />
-                Licence Expired
-              </div>
-            );
-          } else if (daysRemaining < 30) {
-            return (
-              <div className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                Licence expires in {daysRemaining} days
-              </div>
-            );
-          } else {
-            return (
-              <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                Licence valid for {daysRemaining} days
-              </div>
-            );
-          }
-        })()}
         <div className="flex flex-wrap items-center gap-3">
+          {daysRemaining < 0 ? (
+            <div className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center gap-2">
+              <XCircle className="w-4 h-4" />
+              Licence Expired
+            </div>
+          ) : daysRemaining < 30 ? (
+            <div className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Licence expires in {daysRemaining} days
+            </div>
+          ) : (
+            <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              Licence valid for {daysRemaining} days
+            </div>
+          )}
           <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm">
             <span>☀️</span><span>Morning: {houseSummaries.filter((h: any) => h.morningDone).length}/{totalStats.totalHouses}</span>
           </div>
