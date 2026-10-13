@@ -96,7 +96,7 @@ export default function AttendanceHistory() {
     }
   };
 
-  const statusColors: Record<string, string> = { Present: 'bg-green-100 text-green-700', Absent: 'bg-red-100 text-red-700', Sick: 'bg-yellow-100 text-yellow-700', OD: 'bg-blue-100 text-blue-700', 'Staff Ward': 'bg-purple-100 text-purple-700' };
+  const statusColors: Record<string, string> = { Present: 'bg-green-100 text-green-700', Leave: 'bg-yellow-100 text-yellow-700', Sick: 'bg-orange-100 text-orange-700', OD: 'bg-blue-100 text-blue-700', 'Staff Ward': 'bg-purple-100 text-purple-700', 'Absent(Missing)': 'bg-red-100 text-red-700', NR: 'bg-gray-100 text-gray-700', Suspended: 'bg-pink-100 text-pink-700' };
   const sessionColors: Record<string, string> = { Morning: 'bg-orange-100 text-orange-700', Night: 'bg-indigo-100 text-indigo-700' };
 
   return (
@@ -116,7 +116,7 @@ export default function AttendanceHistory() {
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Date</label><input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
           {isAdmin && <div><label className="block text-xs font-medium text-gray-600 mb-1">House</label><select value={filterHouse} onChange={e => setFilterHouse(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option>{houses.map((h: { id: string; house_name: string }) => <option key={h.id} value={h.id}>{h.house_name}</option>)}</select></div>}
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Session</label><select value={filterSession} onChange={e => setFilterSession(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option><option value="Morning">Morning</option><option value="Night">Night</option></select></div>
-          <div><label className="block text-xs font-medium text-gray-600 mb-1">Status</label><select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option><option value="Present">Present</option><option value="Absent">Absent</option><option value="Sick">Sick</option><option value="OD">OD</option><option value="Staff Ward">Staff Ward</option></select></div>
+          <div><label className="block text-xs font-medium text-gray-600 mb-1">Status</label><select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm"><option value="">All</option><option value="Present">Present</option><option value="Leave">Leave</option><option value="Sick">Sick</option><option value="OD">OD</option><option value="Staff Ward">Staff Ward</option><option value="Absent(Missing)">Absent(Missing)</option><option value="NR">NR</option><option value="Suspended">Suspended</option></select></div>
           <div><label className="block text-xs font-medium text-gray-600 mb-1">Search</label><input type="text" placeholder="Name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
           <div className="flex items-end"><button onClick={() => { setFilterDate(new Date().toISOString().split('T')[0]); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterStatus(''); setFilterSession(''); setSearch(''); }} className="w-full px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button></div>
         </div>

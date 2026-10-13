@@ -4,10 +4,16 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import MasterDashboard from './pages/MasterDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import WardenDashboard from './pages/WardenDashboard';
 import Attendance from './pages/Attendance';
+import AttendanceHistory from './pages/AttendanceHistory';
 import Students from './pages/Students';
 import Houses from './pages/Houses';
 import Wardens from './pages/Wardens';
+import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
   const { isAuthenticated, user } = useAuth();
@@ -41,29 +47,29 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to={getRedirectPath()} replace /> : <Login />} />
       
-      <Route path="/master" element={<ProtectedRoute requiredRole="master"><PlaceholderPage title="Master Dashboard" /></ProtectedRoute>} />
+      <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
       <Route path="/master/school-analytics" element={<ProtectedRoute requiredRole="master"><PlaceholderPage title="School Analytics" /></ProtectedRoute>} />
-      <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><PlaceholderPage title="Master Settings" /></ProtectedRoute>} />
+      <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><Settings /></ProtectedRoute>} />
       
-      <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Admin Dashboard" /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/houses" element={<ProtectedRoute requiredRole="admin"><Houses /></ProtectedRoute>} />
       <Route path="/admin/house/:id" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="House Details" /></ProtectedRoute>} />
       <Route path="/admin/students" element={<ProtectedRoute requiredRole="admin"><Students /></ProtectedRoute>} />
       <Route path="/admin/wardens" element={<ProtectedRoute requiredRole="admin"><Wardens /></ProtectedRoute>} />
       <Route path="/admin/attendance" element={<ProtectedRoute requiredRole="admin"><Attendance /></ProtectedRoute>} />
-      <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Attendance History" /></ProtectedRoute>} />
+      <Route path="/admin/attendance-history" element={<ProtectedRoute requiredRole="admin"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Reports" /></ProtectedRoute>} />
       <Route path="/admin/student-report" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Student Report" /></ProtectedRoute>} />
       <Route path="/admin/activity-logs" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Activity Logs" /></ProtectedRoute>} />
-      <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><PlaceholderPage title="Settings" /></ProtectedRoute>} />
+      <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
       
-      <Route path="/warden" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Warden Dashboard" /></ProtectedRoute>} />
+      <Route path="/warden" element={<ProtectedRoute requiredRole="warden"><WardenDashboard /></ProtectedRoute>} />
       <Route path="/warden/students" element={<ProtectedRoute requiredRole="warden"><Students /></ProtectedRoute>} />
       <Route path="/warden/attendance" element={<ProtectedRoute requiredRole="warden"><Attendance /></ProtectedRoute>} />
-      <Route path="/warden/attendance-history" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Attendance History" /></ProtectedRoute>} />
+      <Route path="/warden/attendance-history" element={<ProtectedRoute requiredRole="warden"><AttendanceHistory /></ProtectedRoute>} />
       <Route path="/warden/reports" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Reports" /></ProtectedRoute>} />
       <Route path="/warden/student-report" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="Student Report" /></ProtectedRoute>} />
-      <Route path="/warden/profile" element={<ProtectedRoute requiredRole="warden"><PlaceholderPage title="My Profile" /></ProtectedRoute>} />
+      <Route path="/warden/profile" element={<ProtectedRoute requiredRole="warden"><Profile /></ProtectedRoute>} />
       
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
