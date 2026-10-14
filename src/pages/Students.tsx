@@ -13,9 +13,12 @@ export default function Students() {
   const [search, setSearch] = useState('');
   const [filterHouse, setFilterHouse] = useState(isAdmin ? '' : assignedHouseId);
   const [filterClass, setFilterClass] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('Active');
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -23,6 +26,7 @@ export default function Students() {
     if (!isAdmin && s.house_id !== assignedHouseId) return false;
     if (filterHouse && s.house_id !== filterHouse) return false;
     if (filterClass && s.class !== filterClass) return false;
+    if (filterStatus !== 'all' && s.status !== filterStatus) return false;
     if (search) {
       const q = search.toLowerCase();
       return s.student_name.toLowerCase().includes(q) || s.admission_no.toLowerCase().includes(q) || s.sr_no.includes(q);
@@ -106,6 +110,70 @@ export default function Students() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  // Bulk operations
+  const toggleSelectAll = () => {
+    if (selectedStudents.length === filteredStudents.length) {
+      setSelectedStudents([]);
+    } else {
+      setSelectedStudents(filteredStudents.map(s => s.id));
+    }
+  };
+
+  const toggleSelectStudent = (id: string) => {
+    if (selectedStudents.includes(id)) {
+      setSelectedStudents(selectedStudents.filter(sid => sid !== id));
+    } else {
+      setSelectedStudents([...selectedStudents, id]);
+    }
+  };
+
+  const handleBulkActivate = () => {
+    if (selectedStudents.length === 0) {
+      setToast({ type: 'error', message: 'No students selected' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+    selectedStudents.forEach(id => {
+      updateStudent(id, { status: 'Active' });
+    });
+    setSelectedStudents([]);
+    setShowBulkActions(false);
+    setToast({ type: 'success', message: `${selectedStudents.length} students activated` });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleBulkDeactivate = () => {
+    if (selectedStudents.length === 0) {
+      setToast({ type: 'error', message: 'No students selected' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+    selectedStudents.forEach(id => {
+      updateStudent(id, { status: 'Inactive' });
+    });
+    setSelectedStudents([]);
+    setShowBulkActions(false);
+    setToast({ type: 'success', message: `${selectedStudents.length} students deactivated` });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedStudents.length === 0) {
+      setToast({ type: 'error', message: 'No students selected' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+    if (confirm(`Are you sure you want to delete ${selectedStudents.length} students? This cannot be undone.`)) {
+      selectedStudents.forEach(id => {
+        deleteStudent(id);
+      });
+      setSelectedStudents([]);
+      setShowBulkActions(false);
+      setToast({ type: 'success', message: `${selectedStudents.length} students deleted` });
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
   const classes = ['6', '7', '8', '9', '10', '11', '12'];
 
   return (
@@ -114,15 +182,27 @@ export default function Students() {
       
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold text-gray-800">Students</h1><p className="text-gray-500 text-sm">{filteredStudents.length} students found</p></div>
-        <button onClick={openAddForm} className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"><Plus className="w-4 h-4" /> Add Student</button>
+        <div className="flex flex-wrap gap-2">
+          {selectedStudents.length > 0 && (
+            <button onClick={() => setShowBulkActions(true)} className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
+              Bulk Actions ({selectedStudents.length})
+            </button>
+          )}
+          <button onClick={openAddForm} className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"><Plus className="w-4 h-4" /> Add Student</button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" /></div>
           {isAdmin && <select value={filterHouse} onChange={e => setFilterHouse(e.target.value)} className="px-3 py-2 border rounded-lg text-sm"><option value="">All Houses</option>{houses.map((h: { id: string; house_name: string }) => <option key={h.id} value={h.id}>{h.house_name}</option>)}</select>}
           <select value={filterClass} onChange={e => setFilterClass(e.target.value)} className="px-3 py-2 border rounded-lg text-sm"><option value="">All Classes</option>{classes.map(c => <option key={c} value={c}>Class {c}</option>)}</select>
-          <button onClick={() => { setSearch(''); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterClass(''); }} className="px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as any)} className="px-3 py-2 border rounded-lg text-sm">
+            <option value="all">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          <button onClick={() => { setSearch(''); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterClass(''); setFilterStatus('Active'); }} className="px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button>
         </div>
       </div>
 
@@ -131,6 +211,14 @@ export default function Students() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
+                <th className="text-center px-4 py-3">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Photo</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Sr No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Student</th>
@@ -138,6 +226,7 @@ export default function Students() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Class</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Bed No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">House</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">Status</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
@@ -145,7 +234,15 @@ export default function Students() {
               {filteredStudents.slice(0, 50).map((student: Student) => {
                 const house = houses.find((h: { id: string }) => h.id === student.house_id);
                 return (
-                  <tr key={student.id} className="hover:bg-gray-50">
+                  <tr key={student.id} className={`hover:bg-gray-50 ${student.status === 'Inactive' ? 'opacity-60' : ''}`}>
+                    <td className="text-center px-4 py-3">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedStudents.includes(student.id)}
+                        onChange={() => toggleSelectStudent(student.id)}
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       {student.photo_url ? (
                         <img src={student.photo_url} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-indigo-200" />
@@ -159,6 +256,11 @@ export default function Students() {
                     <td className="px-4 py-3">{student.class}-{student.section}</td>
                     <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{student.bed_no}</td>
                     <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{house?.house_name}</td>
+                    <td className="text-center px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${student.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                        {student.status}
+                      </span>
+                    </td>
                     <td className="px-4 py-3"><div className="flex items-center justify-center gap-1"><button onClick={() => openEditForm(student)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"><Edit2 className="w-4 h-4" /></button><button onClick={() => setShowDeleteConfirm(student.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td>
                   </tr>
                 );
@@ -220,6 +322,21 @@ export default function Students() {
           <div className="bg-white rounded-xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold mb-2">Delete Student?</h3><p className="text-sm text-gray-600 mb-4">This action cannot be undone.</p>
             <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { deleteStudent(showDeleteConfirm); setShowDeleteConfirm(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
+          </div>
+        </div>
+      )}
+
+      {showBulkActions && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Bulk Actions</h3>
+            <p className="text-sm text-gray-600 mb-4">{selectedStudents.length} students selected</p>
+            <div className="space-y-2">
+              <button onClick={handleBulkActivate} className="w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">Activate All</button>
+              <button onClick={handleBulkDeactivate} className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-medium hover:bg-yellow-700">Deactivate All</button>
+              <button onClick={handleBulkDelete} className="w-full px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete All</button>
+              <button onClick={() => setShowBulkActions(false)} className="w-full px-4 py-2 border rounded-lg text-sm">Cancel</button>
+            </div>
           </div>
         </div>
       )}
