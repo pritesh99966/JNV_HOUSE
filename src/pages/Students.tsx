@@ -6,7 +6,7 @@ import { Search, Plus, Upload, Download, Edit2, Trash2, Camera, X } from 'lucide
 
 export default function Students() {
   const { user } = useAuth();
-  const { houses, students, addStudent, updateStudent, deleteStudent, bulkImportStudents } = useData();
+  const { houses, students, addStudent, updateStudent, deleteStudent } = useData();
   const isAdmin = user?.role === 'admin';
   const assignedHouseId = user?.assigned_house_id || '';
   
