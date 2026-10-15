@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { RefreshCw, AlertTriangle, Download, Upload } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileInputRef] = useState<{ current: HTMLInputElement | null }>({ current: null });
 
   const isMaster = user?.role === 'master';
   const schoolId = user?.school_id || '';

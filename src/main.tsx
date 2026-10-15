@@ -87,8 +87,5 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// Removed React.StrictMode to avoid potential useRef issues
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);

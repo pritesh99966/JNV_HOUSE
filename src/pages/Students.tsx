@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Student } from '../types';
@@ -20,7 +20,7 @@ export default function Students() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoInputRef] = useState<{ current: HTMLInputElement | null }>({ current: null });
 
   const filteredStudents = students.filter((s: Student) => {
     if (!isAdmin && s.house_id !== assignedHouseId) return false;
