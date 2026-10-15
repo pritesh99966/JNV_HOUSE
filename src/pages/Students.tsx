@@ -13,7 +13,7 @@ export default function Students() {
   const [search, setSearch] = useState('');
   const [filterHouse, setFilterHouse] = useState(isAdmin ? '' : assignedHouseId);
   const [filterClass, setFilterClass] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('Active');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -176,7 +176,7 @@ export default function Students() {
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-          <button onClick={() => { setSearch(''); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterClass(''); setFilterStatus('Active'); }} className="px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button>
+          <button onClick={() => { setSearch(''); setFilterHouse(isAdmin ? '' : assignedHouseId); setFilterClass(''); setFilterStatus('all'); }} className="px-3 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Clear</button>
         </div>
       </div>
 

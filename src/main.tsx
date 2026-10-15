@@ -46,6 +46,7 @@ function AppRoutes() {
       {/* Master Routes */}
       <Route path="/master" element={<ProtectedRoute requiredRole="master"><MasterDashboard /></ProtectedRoute>} />
       <Route path="/master/school-analytics" element={<ProtectedRoute requiredRole="master"><SchoolAnalytics /></ProtectedRoute>} />
+      <Route path="/master/school-activity-logs/:schoolId" element={<ProtectedRoute requiredRole="master"><ActivityLogs /></ProtectedRoute>} />
       <Route path="/master/settings" element={<ProtectedRoute requiredRole="master"><Settings /></ProtectedRoute>} />
       
       {/* Admin Routes */}
