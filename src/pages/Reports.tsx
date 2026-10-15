@@ -25,30 +25,34 @@ export default function Reports() {
   const reportData = useMemo(() => {
     if (reportType === 'daily') {
       return houses.filter((h: any) => (isAdmin || h.id === assignedHouseId) && h.status === 'Active').map((house: any) => {
-        // Filter attendance based on selected session
-        let allRecords = attendance.filter((a: any) => a.house_id === house.id && a.attendance_date === selectedDate);
-        
-        if (selectedSession !== 'Both') {
-          allRecords = allRecords.filter((a: any) => a.session === selectedSession);
-        }
-        
+        const allRecords = attendance.filter((a: any) => a.house_id === house.id && a.attendance_date === selectedDate);
         const morningRecords = allRecords.filter((a: any) => a.session === 'Morning');
         const nightRecords = allRecords.filter((a: any) => a.session === 'Night');
         const totalStudents = students.filter((s: any) => s.house_id === house.id && s.status === 'Active').length;
         
-        return { 
+        const baseData: any = { 
           House: house.house_name, 
-          Total: totalStudents,
-          'Morning Present': morningRecords.filter((r: any) => r.status === 'Present').length,
-          'Morning Leave': morningRecords.filter((r: any) => r.status === 'Leave').length,
-          'Night Present': nightRecords.filter((r: any) => r.status === 'Present').length,
-          'Night Leave': nightRecords.filter((r: any) => r.status === 'Leave').length,
-          'Total Present': allRecords.filter((r: any) => r.status === 'Present').length,
-          'Total Leave': allRecords.filter((r: any) => r.status === 'Leave').length,
-          'Total Sick': allRecords.filter((r: any) => r.status === 'Sick').length,
-          'Total OD': allRecords.filter((r: any) => r.status === 'OD').length,
-          'Total Staff Ward': allRecords.filter((r: any) => r.status === 'Staff Ward').length,
+          'Total Students': totalStudents,
         };
+
+        // Add columns based on selected session
+        if (selectedSession === 'Morning' || selectedSession === 'Both') {
+          baseData['Morning Present'] = morningRecords.filter((r: any) => r.status === 'Present').length;
+          baseData['Morning Leave'] = morningRecords.filter((r: any) => r.status === 'Leave').length;
+          baseData['Morning Sick'] = morningRecords.filter((r: any) => r.status === 'Sick').length;
+          baseData['Morning OD'] = morningRecords.filter((r: any) => r.status === 'OD').length;
+          baseData['Morning Staff Ward'] = morningRecords.filter((r: any) => r.status === 'Staff Ward').length;
+        }
+
+        if (selectedSession === 'Night' || selectedSession === 'Both') {
+          baseData['Night Present'] = nightRecords.filter((r: any) => r.status === 'Present').length;
+          baseData['Night Leave'] = nightRecords.filter((r: any) => r.status === 'Leave').length;
+          baseData['Night Sick'] = nightRecords.filter((r: any) => r.status === 'Sick').length;
+          baseData['Night OD'] = nightRecords.filter((r: any) => r.status === 'OD').length;
+          baseData['Night Staff Ward'] = nightRecords.filter((r: any) => r.status === 'Staff Ward').length;
+        }
+
+        return baseData;
       });
     } else if (reportType === 'monthly') {
       const hs = students.filter((s: any) => (isAdmin || s.house_id === assignedHouseId) && s.status === 'Active' && (!selectedHouse || s.house_id === selectedHouse));
@@ -67,25 +71,35 @@ export default function Reports() {
         const sick = monthRecords.filter((r: any) => r.status === 'Sick').length;
         const od = monthRecords.filter((r: any) => r.status === 'OD').length;
         const sw = monthRecords.filter((r: any) => r.status === 'Staff Ward').length;
-        const leaveDays = ((leave + sick + od + sw) / 2).toFixed(1);
+        const leaveDays = ((leave + sick + od + sw) / (selectedSession === 'Both' ? 2 : 1)).toFixed(1);
         const percentage = monthRecords.length > 0 ? ((present / monthRecords.length) * 100).toFixed(1) : '0.0';
-        return { 
+        
+        const baseData: any = { 
           Name: student.student_name, 
           Admission: student.admission_no, 
           Class: `${student.class}-${student.section}`, 
-          House: house?.house_name || '', 
-          'Morning Present': morningRecords.filter((r: any) => r.status === 'Present').length,
-          'Morning Leave': morningRecords.filter((r: any) => r.status === 'Leave').length,
-          'Night Present': nightRecords.filter((r: any) => r.status === 'Present').length,
-          'Night Leave': nightRecords.filter((r: any) => r.status === 'Leave').length,
-          'Total Present': present,
-          'Total Leave': leave,
-          'Total Sick': sick,
-          'Total OD': od,
-          'Total Staff Ward': sw,
-          'Leave Days': leaveDays,
-          'Attendance %': percentage,
+          House: house?.house_name || '',
         };
+
+        if (selectedSession === 'Morning' || selectedSession === 'Both') {
+          baseData['Morning Present'] = morningRecords.filter((r: any) => r.status === 'Present').length;
+          baseData['Morning Leave'] = morningRecords.filter((r: any) => r.status === 'Leave').length;
+        }
+
+        if (selectedSession === 'Night' || selectedSession === 'Both') {
+          baseData['Night Present'] = nightRecords.filter((r: any) => r.status === 'Present').length;
+          baseData['Night Leave'] = nightRecords.filter((r: any) => r.status === 'Leave').length;
+        }
+
+        baseData['Total Present'] = present;
+        baseData['Total Leave'] = leave;
+        baseData['Total Sick'] = sick;
+        baseData['Total OD'] = od;
+        baseData['Total Staff Ward'] = sw;
+        baseData['Leave Days'] = leaveDays;
+        baseData['Attendance %'] = percentage;
+
+        return baseData;
       });
     } else if (reportType === 'absent' || reportType === 'sick' || reportType === 'od' || reportType === 'staffward') {
       const statusMap: Record<string, string> = { absent: 'Leave', sick: 'Sick', od: 'OD', staffward: 'Staff Ward' };
@@ -141,7 +155,6 @@ export default function Reports() {
       const headers = Object.keys(reportData[0] as Record<string, unknown>);
       let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>${school?.name || 'School'} - ${reportType} Report</title></head><body>`;
       
-      // Add school name header
       html += `<h1 style="color: #4f46e5; font-family: Arial;">${school?.name || 'School'}</h1>`;
       html += `<h2 style="color: #666; font-family: Arial;">${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report - ${selectedDate}</h2>`;
       html += `<p style="color: #999; font-family: Arial;">Session: ${selectedSession} | Generated: ${new Date().toLocaleString()}</p>`;
@@ -153,11 +166,10 @@ export default function Reports() {
       reportData.forEach((row: Record<string, unknown>) => {
         html += '<tr>';
         headers.forEach(h => { html += `<td style="padding: 6px;">${row[h] ?? ''}</td>`; });
-        html += '<td style="padding: 6px;"></td>'; // Signature column
+        html += '<td style="padding: 6px;"></td>';
         html += '</tr>';
       });
       
-      // Add totals row for daily report
       if (reportType === 'daily' && totals) {
         html += '<tr style="background-color: #f3f4f6; font-weight: bold;">';
         html += '<td style="padding: 6px;">TOTAL</td>';
@@ -183,7 +195,7 @@ export default function Reports() {
       showToast('success', `Excel file exported successfully (${reportData.length} records)`);
     } catch (error) {
       console.error('Excel export failed:', error);
-      showToast('error', 'Excel export failed. Please try CSV export instead.');
+      showToast('error', 'Excel export failed.');
     }
   };
 
@@ -197,7 +209,6 @@ export default function Reports() {
       const BOM = '\uFEFF';
       let csvContent = BOM;
       
-      // Add school name and report info
       csvContent += `School:,${school?.name || 'School'}\n`;
       csvContent += `Report Type:,${reportType}\n`;
       csvContent += `Date:,${selectedDate}\n`;
@@ -211,7 +222,6 @@ export default function Reports() {
         }).join(',') + ',""\n'
       ).join('');
       
-      // Add totals for daily report
       if (reportType === 'daily' && totals) {
         csvContent += '"TOTAL",';
         csvContent += Object.keys(totals).slice(1).map(key => totals[key]).join(',') + ',""\n';
@@ -232,7 +242,7 @@ export default function Reports() {
       showToast('success', `CSV file exported successfully (${reportData.length} records)`);
     } catch (error) {
       console.error('CSV export failed:', error);
-      showToast('error', 'CSV export failed. Please try again.');
+      showToast('error', 'CSV export failed.');
     }
   };
 
@@ -305,7 +315,7 @@ export default function Reports() {
       }, 250);
     } catch (error) {
       console.error('Print failed:', error);
-      showToast('error', 'Print failed. Please try again.');
+      showToast('error', 'Print failed.');
     }
   };
 

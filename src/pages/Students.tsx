@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Student } from '../types';
-import { Search, Plus, Upload, Download, Edit2, Trash2, Camera, X } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X, CheckSquare, Square } from 'lucide-react';
 
 export default function Students() {
   const { user } = useAuth();
@@ -20,7 +20,6 @@ export default function Students() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
-  const [photoInputRef] = useState<{ current: HTMLInputElement | null }>({ current: null });
 
   const filteredStudents = students.filter((s: Student) => {
     if (!isAdmin && s.house_id !== assignedHouseId) return false;
@@ -38,7 +37,7 @@ export default function Students() {
     admission_no: '', student_name: '', gender: 'Male' as 'Male' | 'Female',
     class: '', section: 'A', dob: '', father_name: '', mother_name: '', mobile: '',
     house_id: isAdmin ? '' : assignedHouseId, bed_no: '', sr_no: '',
-    photo_url: '', medical_remark: '', status: 'Active' as 'Active' | 'Inactive'
+    medical_remark: '', status: 'Active' as 'Active' | 'Inactive'
   });
 
   const openAddForm = () => {
@@ -47,7 +46,7 @@ export default function Students() {
       admission_no: `ADM${String(Date.now()).slice(-5)}`, student_name: '', gender: 'Male',
       class: '', section: 'A', dob: '', father_name: '', mother_name: '', mobile: '',
       house_id: isAdmin ? '' : assignedHouseId, bed_no: '', sr_no: '',
-      photo_url: '', medical_remark: '', status: 'Active'
+      medical_remark: '', status: 'Active'
     });
     setShowForm(true);
   };
@@ -58,39 +57,10 @@ export default function Students() {
       admission_no: student.admission_no, student_name: student.student_name, gender: student.gender,
       class: student.class, section: student.section, dob: student.dob, father_name: student.father_name,
       mother_name: student.mother_name, mobile: student.mobile, house_id: student.house_id,
-      bed_no: student.bed_no, sr_no: student.sr_no, photo_url: student.photo_url,
+      bed_no: student.bed_no, sr_no: student.sr_no,
       medical_remark: student.medical_remark, status: student.status
     });
     setShowForm(true);
-  };
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxSize = 100;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
-          } else {
-            if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.6);
-          setFormData({ ...formData, photo_url: compressed });
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleSave = () => {
@@ -99,11 +69,12 @@ export default function Students() {
       setTimeout(() => setToast(null), 3000);
       return;
     }
+    const studentData = { ...formData, photo_url: '' };
     if (editingStudent) {
-      updateStudent(editingStudent.id, formData);
+      updateStudent(editingStudent.id, studentData);
       setToast({ type: 'success', message: 'Student updated' });
     } else {
-      addStudent(formData);
+      addStudent(studentData);
       setToast({ type: 'success', message: 'Student added' });
     }
     setShowForm(false);
@@ -133,12 +104,13 @@ export default function Students() {
       setTimeout(() => setToast(null), 3000);
       return;
     }
+    const count = selectedStudents.length;
     selectedStudents.forEach(id => {
       updateStudent(id, { status: 'Active' });
     });
     setSelectedStudents([]);
     setShowBulkActions(false);
-    setToast({ type: 'success', message: `${selectedStudents.length} students activated` });
+    setToast({ type: 'success', message: `${count} students activated` });
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -148,12 +120,13 @@ export default function Students() {
       setTimeout(() => setToast(null), 3000);
       return;
     }
+    const count = selectedStudents.length;
     selectedStudents.forEach(id => {
       updateStudent(id, { status: 'Inactive' });
     });
     setSelectedStudents([]);
     setShowBulkActions(false);
-    setToast({ type: 'success', message: `${selectedStudents.length} students deactivated` });
+    setToast({ type: 'success', message: `${count} students deactivated` });
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -164,12 +137,13 @@ export default function Students() {
       return;
     }
     if (confirm(`Are you sure you want to delete ${selectedStudents.length} students? This cannot be undone.`)) {
+      const count = selectedStudents.length;
       selectedStudents.forEach(id => {
         deleteStudent(id);
       });
       setSelectedStudents([]);
       setShowBulkActions(false);
-      setToast({ type: 'success', message: `${selectedStudents.length} students deleted` });
+      setToast({ type: 'success', message: `${count} students deleted` });
       setTimeout(() => setToast(null), 3000);
     }
   };
@@ -219,7 +193,6 @@ export default function Students() {
                     className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                   />
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Photo</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Sr No</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Student</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Adm No</th>
@@ -242,13 +215,6 @@ export default function Students() {
                         onChange={() => toggleSelectStudent(student.id)}
                         className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                       />
-                    </td>
-                    <td className="px-4 py-3">
-                      {student.photo_url ? (
-                        <img src={student.photo_url} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-indigo-200" />
-                      ) : (
-                        <div className="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-bold">{student.student_name.charAt(0)}</div>
-                      )}
                     </td>
                     <td className="px-4 py-3 font-medium">{student.sr_no}</td>
                     <td className="px-4 py-3"><span className="font-medium">{student.student_name}</span></td>
@@ -276,25 +242,6 @@ export default function Students() {
           <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b"><h2 className="text-lg font-bold">{editingStudent ? 'Edit Student' : 'Add Student'}</h2><button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
             <div className="p-5">
-              <div className="flex items-center gap-4 mb-5 p-4 bg-gray-50 rounded-lg">
-                <div className="relative">
-                  {formData.photo_url ? (
-                    <img src={formData.photo_url} alt="" className="w-20 h-20 rounded-full object-cover border-3 border-indigo-300" />
-                  ) : (
-                    <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-400 text-2xl font-bold">{formData.student_name?.charAt(0) || '?'}</div>
-                  )}
-                  <button onClick={() => photoInputRef.current?.click()} className="absolute bottom-0 right-0 w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-indigo-700">
-                    <Camera className="w-3.5 h-3.5" />
-                  </button>
-                  <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">Student Photo</p>
-                  <p className="text-xs text-gray-500">Click camera icon to upload photo</p>
-                  {formData.photo_url && <button onClick={() => setFormData({ ...formData, photo_url: '' })} className="text-xs text-red-500 hover:underline mt-1">Remove photo</button>}
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">Student Name *</label><input type="text" value={formData.student_name} onChange={e => setFormData({ ...formData, student_name: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" /></div>
                 <div><label className="block text-sm font-medium text-gray-700 mb-1">Admission No</label><input type="text" value={formData.admission_no} onChange={e => setFormData({ ...formData, admission_no: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
