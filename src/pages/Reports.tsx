@@ -173,7 +173,7 @@ export default function Reports() {
       if (reportType === 'daily' && totals) {
         html += '<tr style="background-color: #f3f4f6; font-weight: bold;">';
         html += '<td style="padding: 6px;">TOTAL</td>';
-        headers.slice(1).forEach(h => { html += `<td style="padding: 6px;">${totals[h] ?? ''}</td>`; });
+        headers.forEach(h => { html += `<td style="padding: 6px;">${totals[h] ?? ''}</td>`; });
         html += '<td style="padding: 6px;"></td>';
         html += '</tr>';
       }
@@ -224,7 +224,7 @@ export default function Reports() {
       
       if (reportType === 'daily' && totals) {
         csvContent += '"TOTAL",';
-        csvContent += Object.keys(totals).slice(1).map(key => totals[key]).join(',') + ',""\n';
+        csvContent += Object.keys(totals).map(key => totals[key]).join(',') + ',""\n';
       }
       
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -296,7 +296,7 @@ export default function Reports() {
               ${reportType === 'daily' && totals ? `
                 <tr class="total-row">
                   <td>TOTAL</td>
-                  ${Object.keys(totals).slice(1).map(key => `<td>${totals[key]}</td>`).join('')}
+                  ${Object.keys(totals).map(key => `<td>${totals[key]}</td>`).join('')}
                   <td></td>
                 </tr>
               ` : ''}
@@ -396,7 +396,7 @@ export default function Reports() {
               {reportType === 'daily' && totals && (
                 <tr className="bg-gray-100 font-bold">
                   <td className="px-4 py-3 text-gray-900">TOTAL</td>
-                  {Object.keys(totals).slice(1).map(key => <td key={key} className="px-4 py-3 text-gray-900">{totals[key]}</td>)}
+                  {Object.keys(totals).map(key => <td key={key} className="px-4 py-3 text-gray-900">{totals[key]}</td>)}
                   <td className="px-4 py-3"></td>
                 </tr>
               )}
