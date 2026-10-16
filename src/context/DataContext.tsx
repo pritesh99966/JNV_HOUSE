@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { House, Warden, Student, Attendance, AttendanceStatus, AttendanceSession, School } from '../types';
-import { getInitialData, saveToStorage, getSchoolData, seedHouses, seedWardens, seedStudents, seedAttendance } from '../data/seedData';
+import { getInitialData, saveToStorage, getSchoolData } from '../data/seedData';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
@@ -22,11 +22,9 @@ interface DataContextType {
   addStudent: (student: Omit<Student, 'id' | 'created_at' | 'updated_at'>) => void;
   updateStudent: (id: string, student: Partial<Student>) => void;
   deleteStudent: (id: string) => void;
-  bulkImportStudents: (students: Omit<Student, 'id' | 'created_at' | 'updated_at'>[]) => void;
   saveAttendance: (studentId: string, houseId: string, date: string, session: AttendanceSession, status: AttendanceStatus, remark: string, markedBy: string) => boolean;
   bulkSaveAttendance: (records: { student_id: string; house_id: string; status: AttendanceStatus; remark: string }[], date: string, session: AttendanceSession, markedBy: string) => void;
   getAttendanceForDate: (houseId: string, date: string, session: AttendanceSession) => Attendance[];
-  getStudentsByHouse: (houseId: string) => Student[];
   getAttendanceSummary: (houseId: string, date: string, session: AttendanceSession) => { present: number; absent: number; sick: number; od: number; staffWard: number; total: number };
   refreshData: () => void;
 }
@@ -73,12 +71,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
     
-    // Initialize school-specific data with seed data
     const schoolId = newSchool.id;
-    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
-    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
-    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
-    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
+    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify([]));
+    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify([]));
   };
   
   const updateSchool = (id: string, updates: Partial<School>) => {
@@ -88,16 +85,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const deleteSchool = (id: string) => {
+    // Delete all school-related data from localStorage
+    localStorage.removeItem(`hms_${id}_houses`);
+    localStorage.removeItem(`hms_${id}_wardens`);
+    localStorage.removeItem(`hms_${id}_students`);
+    localStorage.removeItem(`hms_${id}_attendance`);
+    
+    // Delete school from schools array
     const updated = data.schools.filter((s: School) => s.id !== id);
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
   };
 
-  const saveDataToStorage = (key: string, data: any) => {
+  const saveDataToStorage = (key: string, dataToSave: any) => {
     if (currentSchoolId && user?.role !== 'master') {
-      localStorage.setItem(`hms_${currentSchoolId}_${key}`, JSON.stringify(data));
+      localStorage.setItem(`hms_${currentSchoolId}_${key}`, JSON.stringify(dataToSave));
     } else {
-      localStorage.setItem(`hms_${key}`, JSON.stringify(data));
+      localStorage.setItem(`hms_${key}`, JSON.stringify(dataToSave));
     }
   };
 
@@ -147,14 +151,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveDataToStorage('students', updated);
   };
   
-  const bulkImportStudents = (studentsList: Omit<Student, 'id' | 'created_at' | 'updated_at'>[]) => {
-    const now = new Date().toISOString();
-    const newStudents: Student[] = studentsList.map((s, i) => ({ ...s, id: `s${Date.now()}_${i}`, created_at: now, updated_at: now }));
-    const updated = [...data.students, ...newStudents]; 
-    setData(d => ({ ...d, students: updated })); 
-    saveDataToStorage('students', updated);
-  };
-  
   const updateStudent = (id: string, updates: Partial<Student>) => {
     const updated = data.students.map((s: Student) => s.id === id ? { ...s, ...updates, updated_at: new Date().toISOString() } : s);
     setData(d => ({ ...d, students: updated })); 
@@ -199,7 +195,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const getAttendanceForDate = (houseId: string, date: string, session: AttendanceSession): Attendance[] => data.attendance.filter((a: Attendance) => a.house_id === houseId && a.attendance_date === date && a.session === session);
-  const getStudentsByHouse = (houseId: string): Student[] => data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
+  
   const getAttendanceSummary = (houseId: string, date: string, session: AttendanceSession) => {
     const records = data.attendance.filter((a: Attendance) => a.house_id === houseId && a.attendance_date === date && a.session === session);
     const activeStudents = data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
@@ -233,11 +229,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addStudent, 
       updateStudent, 
       deleteStudent, 
-      bulkImportStudents, 
       saveAttendance, 
       bulkSaveAttendance, 
       getAttendanceForDate, 
-      getStudentsByHouse, 
       getAttendanceSummary, 
       refreshData 
     }}>

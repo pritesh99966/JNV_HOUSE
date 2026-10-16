@@ -37,7 +37,7 @@ export function createAuditLog(
     user_id: userInfo.user_id,
     user_name: userInfo.user_name,
     user_role: userInfo.user_role,
-    school_id: userInfo.school_id,
+    school_id: userInfo.school_id || '',
     school_name: userInfo.school_name,
     action,
     resource_type,

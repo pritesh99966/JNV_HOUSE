@@ -14,7 +14,7 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-01-01',
     licence_expiry_date: '2025-12-31',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    last_login: new Date().toISOString(),
     total_time_spent: 1250
   },
   {
@@ -30,56 +30,8 @@ export const seedSchools: School[] = [
     licence_start_date: '2024-01-01',
     licence_expiry_date: '2025-06-30',
     licence_status: 'Active',
-    last_login: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    last_login: new Date().toISOString(),
     total_time_spent: 890
-  },
-  {
-    id: 'school3',
-    name: 'Delhi Public School',
-    code: 'DPS001',
-    admin_username: 'dps001',
-    admin_password: 'DPS@Secure#2024',
-    admin_name: 'Amit Sharma',
-    admin_email: 'dps001@school.com',
-    created_at: '2024-01-15',
-    status: 'Active',
-    licence_start_date: '2024-01-15',
-    licence_expiry_date: '2025-01-14',
-    licence_status: 'Active',
-    last_login: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    total_time_spent: 2100
-  },
-  {
-    id: 'school4',
-    name: 'Ryan International School',
-    code: 'RIS001',
-    admin_username: 'ris001',
-    admin_password: 'Ryan@Admin#2024',
-    admin_name: 'Priya Singh',
-    admin_email: 'ris001@school.com',
-    created_at: '2024-02-01',
-    status: 'Active',
-    licence_start_date: '2024-02-01',
-    licence_expiry_date: '2024-12-31',
-    licence_status: 'Active',
-    last_login: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    total_time_spent: 560
-  },
-  {
-    id: 'school5',
-    name: 'DAV Public School',
-    code: 'DAV001',
-    admin_username: 'dav001',
-    admin_password: 'DAV@Secure#2024',
-    admin_name: 'Vikram Patel',
-    admin_email: 'dav001@school.com',
-    created_at: '2024-02-15',
-    status: 'Active',
-    licence_start_date: '2024-02-15',
-    licence_expiry_date: '2025-02-14',
-    licence_status: 'Active',
-    last_login: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    total_time_spent: 1680
   }
 ];
 
@@ -98,79 +50,53 @@ export const seedHouses: House[] = [
   { id: 'h12', house_name: 'Udaygiri Girls', category: 'Girls', gender: 'Female', status: 'Active', created_at: '2024-01-01' },
 ];
 
-// Generate unique wardens for each school
-function generateWardensForSchool(schoolId: string, schoolCode: string): Warden[] {
-  const wardenNames = [
-    { name: 'Rajesh Kumar', house: 'h1' },
-    { name: 'Suresh Patel', house: 'h2' },
-    { name: 'Mahesh Singh', house: 'h3' },
-    { name: 'Dinesh Sharma', house: 'h4' },
-    { name: 'Vikram Joshi', house: 'h5' },
-    { name: 'Amit Verma', house: 'h6' },
-    { name: 'Prakash Gupta', house: 'h7' },
-    { name: 'Sanjay Reddy', house: 'h8' },
-    { name: 'Priya Sharma', house: 'h9' },
-    { name: 'Neha Patel', house: 'h10' },
-    { name: 'Kavita Singh', house: 'h11' },
-    { name: 'Anita Verma', house: 'h12' }
-  ];
-
-  return wardenNames.map((w, index) => ({
-    id: `w_${schoolId}_${index + 1}`,
-    name: w.name,
-    username: `${schoolCode.toLowerCase()}_w${index + 1}`,
-    email: `${schoolCode.toLowerCase()}_w${index + 1}@school.com`,
-    mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-    password: `warden${schoolCode}`,
-    assigned_house_id: w.house,
-    status: 'Active' as const,
-    photo_url: '',
-    created_at: '2024-01-01'
-  }));
-}
-
-// Generate wardens for all schools
 export const seedWardens: Warden[] = [
-  ...generateWardensForSchool('school1', 'KV001'),
-  ...generateWardensForSchool('school2', 'KV002'),
-  ...generateWardensForSchool('school3', 'DPS001'),
-  ...generateWardensForSchool('school4', 'RIS001'),
-  ...generateWardensForSchool('school5', 'DAV001')
+  { id: 'w1', name: 'Rajesh Kumar', username: 'kv001_w1', email: 'kv001_w1@school.com', mobile: '9876543201', password: 'wardenKV001', assigned_house_id: 'h1', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w2', name: 'Suresh Patel', username: 'kv001_w2', email: 'kv001_w2@school.com', mobile: '9876543202', password: 'wardenKV001', assigned_house_id: 'h2', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w3', name: 'Mahesh Singh', username: 'kv001_w3', email: 'kv001_w3@school.com', mobile: '9876543203', password: 'wardenKV001', assigned_house_id: 'h3', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w4', name: 'Dinesh Sharma', username: 'kv001_w4', email: 'kv001_w4@school.com', mobile: '9876543204', password: 'wardenKV001', assigned_house_id: 'h4', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w5', name: 'Vikram Joshi', username: 'kv001_w5', email: 'kv001_w5@school.com', mobile: '9876543205', password: 'wardenKV001', assigned_house_id: 'h5', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w6', name: 'Amit Verma', username: 'kv001_w6', email: 'kv001_w6@school.com', mobile: '9876543206', password: 'wardenKV001', assigned_house_id: 'h6', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w7', name: 'Prakash Gupta', username: 'kv001_w7', email: 'kv001_w7@school.com', mobile: '9876543207', password: 'wardenKV001', assigned_house_id: 'h7', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w8', name: 'Sanjay Reddy', username: 'kv001_w8', email: 'kv001_w8@school.com', mobile: '9876543208', password: 'wardenKV001', assigned_house_id: 'h8', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w9', name: 'Priya Sharma', username: 'kv001_w9', email: 'kv001_w9@school.com', mobile: '9876543209', password: 'wardenKV001', assigned_house_id: 'h9', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w10', name: 'Neha Patel', username: 'kv001_w10', email: 'kv001_w10@school.com', mobile: '9876543210', password: 'wardenKV001', assigned_house_id: 'h10', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w11', name: 'Kavita Singh', username: 'kv001_w11', email: 'kv001_w11@school.com', mobile: '9876543211', password: 'wardenKV001', assigned_house_id: 'h11', status: 'Active', photo_url: '', created_at: '2024-01-01' },
+  { id: 'w12', name: 'Anita Verma', username: 'kv001_w12', email: 'kv001_w12@school.com', mobile: '9876543212', password: 'wardenKV001', assigned_house_id: 'h12', status: 'Active', photo_url: '', created_at: '2024-01-01' },
 ];
 
-const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak', 'Ravi', 'Sneha', 'Arjun', 'Kiran', 'Manish', 'Divya', 'Rohit', 'Anjali', 'Gaurav', 'Swati'];
-const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma', 'Gupta', 'Joshi', 'Reddy', 'Shah', 'Mehta'];
+const firstNames = ['Rahul', 'Amit', 'Raj', 'Priya', 'Ankit', 'Neha', 'Vikram', 'Suresh', 'Pooja', 'Deepak'];
+const lastNames = ['Patel', 'Sharma', 'Singh', 'Kumar', 'Verma'];
 const classes = ['6', '7', '8', '9', '10', '11', '12'];
-const sections = ['A', 'B', 'C'];
+const sections = ['A', 'B'];
 
-function generateStudentsForSchool(schoolId: string): Student[] {
+function generateStudents(): Student[] {
   const students: Student[] = [];
   let id = 1;
   seedHouses.forEach((house) => {
-    const count = 20; // Reduced from 35 to save storage
+    const count = 10;
     for (let i = 0; i < count; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-      const cls = house.category === 'Junior Boys' ? classes[Math.floor(Math.random() * 3)] : classes[Math.floor(Math.random() * classes.length)];
-      const bedNo = `B${String(Math.floor(Math.random() * 200) + 1).padStart(3, '0')}`;
+      const cls = classes[Math.floor(Math.random() * classes.length)];
       students.push({
-        id: `s_${schoolId}_${id}`, 
-        admission_no: `${schoolId.toUpperCase()}_ADM${String(2024000 + id).slice(-5)}`,
-        student_name: `${firstName} ${lastName}`, 
+        id: `s${id}`,
+        admission_no: `ADM${String(2024000 + id).slice(-5)}`,
+        student_name: `${firstName} ${lastName}`,
         gender: house.gender,
-        class: cls, 
+        class: cls,
         section: sections[Math.floor(Math.random() * sections.length)],
-        dob: `${2008 + Math.floor(Math.random() * 6)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-        father_name: `Mr. ${firstName} ${lastName}`, 
-        mother_name: `Mrs. ${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastName}`,
+        dob: `2008-01-${String(i + 1).padStart(2, '0')}`,
+        father_name: `Mr. ${firstName} ${lastName}`,
+        mother_name: `Mrs. ${firstName} ${lastName}`,
         mobile: `98${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
-        house_id: house.id, 
-        bed_no: bedNo, 
+        house_id: house.id,
+        bed_no: `B${String(i + 1).padStart(3, '0')}`,
         sr_no: String(i + 1).padStart(2, '0'),
-        photo_url: '', 
+        photo_url: '',
         medical_remark: '',
-        status: 'Active', 
-        created_at: '2024-01-01', 
+        status: 'Active',
+        created_at: '2024-01-01',
         updated_at: '2024-01-01',
       });
       id++;
@@ -179,157 +105,76 @@ function generateStudentsForSchool(schoolId: string): Student[] {
   return students;
 }
 
-// Generate students for all schools
-export const seedStudents: Student[] = [
-  ...generateStudentsForSchool('school1'),
-  ...generateStudentsForSchool('school2'),
-  ...generateStudentsForSchool('school3'),
-  ...generateStudentsForSchool('school4'),
-  ...generateStudentsForSchool('school5')
-];
-
 function generateAttendance(students: Student[]): Attendance[] {
   const attendance: Attendance[] = [];
   let id = 1;
-  const dates: string[] = [];
-  // Only generate 3 days of attendance data to save storage
-  for (let d = 2; d >= 0; d--) {
-    const date = new Date();
-    date.setDate(date.getDate() - d);
-    dates.push(date.toISOString().split('T')[0]);
-  }
+  const today = new Date().toISOString().split('T')[0];
   const sessions: AttendanceSession[] = ['Morning', 'Night'];
   
   students.forEach((student) => {
-    dates.forEach((date) => {
-      sessions.forEach((session) => {
-        const rand = Math.random();
-        let status: Attendance['status'];
-        let remark = '';
-        
-        if (rand < 0.82) {
-          status = 'Present';
-        } else if (rand < 0.90) {
-          status = 'Leave';
-          remark = 'Leave approved';
-        } else if (rand < 0.95) {
-          status = 'Sick';
-          remark = 'Medical leave';
-        } else if (rand < 0.98) {
-          status = 'OD';
-          remark = 'On duty - Sports/Competition';
-        } else {
-          status = 'Staff Ward';
-          remark = 'Under medical supervision';
-        }
-        
-        attendance.push({
-          id: `a${id}`, student_id: student.id, house_id: student.house_id,
-          attendance_date: date, session, status, remark, marked_by: 'admin',
-          created_at: date, updated_at: date,
-        });
-        id++;
+    sessions.forEach((session) => {
+      const rand = Math.random();
+      let status: Attendance['status'];
+      
+      if (rand < 0.85) status = 'Present';
+      else if (rand < 0.92) status = 'Leave';
+      else if (rand < 0.96) status = 'Sick';
+      else if (rand < 0.98) status = 'OD';
+      else status = 'Staff Ward';
+      
+      attendance.push({
+        id: `a${id}`,
+        student_id: student.id,
+        house_id: student.house_id,
+        attendance_date: today,
+        session,
+        status,
+        remark: '',
+        marked_by: 'admin',
+        created_at: today,
+        updated_at: today,
       });
+      id++;
     });
   });
   return attendance;
 }
 
+export const seedStudents = generateStudents();
 export const seedAttendance = generateAttendance(seedStudents);
 
 export function getInitialData() {
   const schools = localStorage.getItem('hms_schools');
   if (!schools) {
     localStorage.setItem('hms_schools', JSON.stringify(seedSchools));
-    localStorage.setItem('hms_houses', JSON.stringify(seedHouses));
-    localStorage.setItem('hms_wardens', JSON.stringify(seedWardens));
-    localStorage.setItem('hms_students', JSON.stringify(seedStudents));
-    localStorage.setItem('hms_attendance', JSON.stringify(seedAttendance));
-    
-    seedSchools.forEach(school => {
-      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
-      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
-      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
-      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
-    });
-    
-    return { 
-      schools: seedSchools,
-      houses: seedHouses, 
-      wardens: seedWardens, 
-      students: seedStudents, 
-      attendance: seedAttendance 
-    };
+    localStorage.setItem('hms_school1_houses', JSON.stringify(seedHouses));
+    localStorage.setItem('hms_school1_wardens', JSON.stringify(seedWardens));
+    localStorage.setItem('hms_school1_students', JSON.stringify(seedStudents));
+    localStorage.setItem('hms_school1_attendance', JSON.stringify(seedAttendance));
+    localStorage.setItem('hms_school2_houses', JSON.stringify(seedHouses));
+    localStorage.setItem('hms_school2_wardens', JSON.stringify(seedWardens));
+    localStorage.setItem('hms_school2_students', JSON.stringify(seedStudents));
+    localStorage.setItem('hms_school2_attendance', JSON.stringify(seedAttendance));
   }
   
-  const schoolsList = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
-  schoolsList.forEach(school => {
-    if (!localStorage.getItem(`hms_${school.id}_houses`)) {
-      localStorage.setItem(`hms_${school.id}_houses`, JSON.stringify(seedHouses));
-      localStorage.setItem(`hms_${school.id}_wardens`, JSON.stringify(seedWardens));
-      localStorage.setItem(`hms_${school.id}_students`, JSON.stringify(seedStudents));
-      localStorage.setItem(`hms_${school.id}_attendance`, JSON.stringify(seedAttendance));
-    }
-  });
-  
   return {
-    schools: schoolsList,
-    houses: JSON.parse(localStorage.getItem('hms_houses') || '[]') as House[],
-    wardens: JSON.parse(localStorage.getItem('hms_wardens') || '[]') as Warden[],
-    students: JSON.parse(localStorage.getItem('hms_students') || '[]') as Student[],
-    attendance: JSON.parse(localStorage.getItem('hms_attendance') || '[]') as Attendance[],
+    schools: JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[],
+    houses: JSON.parse(localStorage.getItem('hms_school1_houses') || '[]') as House[],
+    wardens: JSON.parse(localStorage.getItem('hms_school1_wardens') || '[]') as Warden[],
+    students: JSON.parse(localStorage.getItem('hms_school1_students') || '[]') as Student[],
+    attendance: JSON.parse(localStorage.getItem('hms_school1_attendance') || '[]') as Attendance[],
   };
 }
 
 export function getSchoolData(schoolId: string) {
-  const allSchools = JSON.parse(localStorage.getItem('hms_schools') || '[]') as School[];
-  const school = allSchools.find(s => s.id === schoolId);
-  
-  let schoolHouses = JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[];
-  let schoolWardens = JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[];
-  let schoolStudents = JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[];
-  let schoolAttendance = JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[];
-  
-  if (schoolHouses.length === 0) {
-    schoolHouses = seedHouses;
-    localStorage.setItem(`hms_${schoolId}_houses`, JSON.stringify(seedHouses));
-  }
-  if (schoolWardens.length === 0) {
-    schoolWardens = seedWardens;
-    localStorage.setItem(`hms_${schoolId}_wardens`, JSON.stringify(seedWardens));
-  }
-  if (schoolStudents.length === 0) {
-    schoolStudents = seedStudents;
-    localStorage.setItem(`hms_${schoolId}_students`, JSON.stringify(seedStudents));
-  }
-  if (schoolAttendance.length === 0) {
-    schoolAttendance = seedAttendance;
-    localStorage.setItem(`hms_${schoolId}_attendance`, JSON.stringify(seedAttendance));
-  }
-  
   return {
-    school,
-    houses: schoolHouses,
-    wardens: schoolWardens,
-    students: schoolStudents,
-    attendance: schoolAttendance
+    houses: JSON.parse(localStorage.getItem(`hms_${schoolId}_houses`) || '[]') as House[],
+    wardens: JSON.parse(localStorage.getItem(`hms_${schoolId}_wardens`) || '[]') as Warden[],
+    students: JSON.parse(localStorage.getItem(`hms_${schoolId}_students`) || '[]') as Student[],
+    attendance: JSON.parse(localStorage.getItem(`hms_${schoolId}_attendance`) || '[]') as Attendance[],
   };
 }
 
 export function saveToStorage(key: string, data: any) {
-  try {
-    localStorage.setItem(`hms_${key}`, JSON.stringify(data));
-  } catch (e) {
-    // If storage is full, try to cleanup old attendance data
-    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-      if (key.includes('_attendance')) {
-        // Keep only last 3 days of attendance
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - 3);
-        const cutoff = cutoffDate.toISOString().split('T')[0];
-        const filtered = (data as any[]).filter((item: any) => item.attendance_date >= cutoff);
-        localStorage.setItem(`hms_${key}`, JSON.stringify(filtered));
-      }
-    }
-  }
+  localStorage.setItem(`hms_${key}`, JSON.stringify(data));
 }

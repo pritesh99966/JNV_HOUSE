@@ -118,6 +118,7 @@ export function logStudentAdded(schoolId: string, userId: string, userName: stri
     user_role: 'warden',
     school_id: schoolId,
     action: 'STUDENT_ADDED',
+    resource_type: 'student',
     details: `New student added: ${studentName} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
   });
 }

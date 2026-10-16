@@ -32,9 +32,28 @@ export default function MasterDashboard() {
     status: 'Active' as 'Active' | 'Expired' | 'Suspended'
   });
 
-  const totalStudents = students.length;
-  const totalWardens = wardens.length;
-  const totalHouses = houses.length;
+  // Calculate totals from all schools
+  const allSchoolsData = useMemo(() => {
+    let totalStudents = 0;
+    let totalWardens = 0;
+    let totalHouses = 0;
+    
+    schools.forEach((school: any) => {
+      const schoolData = JSON.parse(localStorage.getItem(`hms_${school.id}_students`) || '[]');
+      const schoolWardens = JSON.parse(localStorage.getItem(`hms_${school.id}_wardens`) || '[]');
+      const schoolHouses = JSON.parse(localStorage.getItem(`hms_${school.id}_houses`) || '[]');
+      
+      totalStudents += schoolData.length;
+      totalWardens += schoolWardens.length;
+      totalHouses += schoolHouses.length;
+    });
+    
+    return { totalStudents, totalWardens, totalHouses };
+  }, [schools]);
+
+  const totalStudents = allSchoolsData.totalStudents;
+  const totalWardens = allSchoolsData.totalWardens;
+  const totalHouses = allSchoolsData.totalHouses;
 
   const handleAddSchool = () => {
     if (!newSchool.name || !newSchool.code || !newSchool.admin_username || !newSchool.admin_password || !newSchool.admin_name) {
@@ -79,8 +98,16 @@ export default function MasterDashboard() {
   };
 
   const handleDeleteSchool = (schoolId: string) => {
+    // Delete school data from localStorage
+    localStorage.removeItem(`hms_${schoolId}_houses`);
+    localStorage.removeItem(`hms_${schoolId}_wardens`);
+    localStorage.removeItem(`hms_${schoolId}_students`);
+    localStorage.removeItem(`hms_${schoolId}_attendance`);
+    
+    // Delete school from database
     deleteSchool(schoolId);
-    setToast({ type: 'success', message: 'School deleted successfully' });
+    
+    setToast({ type: 'success', message: 'School and all its data deleted successfully' });
     setShowDeleteConfirm(null);
     setTimeout(() => setToast(null), 3000);
   };

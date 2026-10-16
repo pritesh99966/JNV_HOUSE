@@ -1,6 +1,6 @@
-export type AttendanceStatus = 'Present' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward' | 'Absent(Missing)' | 'NR' | 'Suspended';
+export type AttendanceStatus = 'Present' | 'Absent' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward' | 'Absent(Missing)' | 'NR' | 'Suspended';
 export type AttendanceSession = 'Morning' | 'Night';
-export type UserRole = 'admin' | 'warden';
+export type UserRole = 'admin' | 'warden' | 'master';
 export type HouseCategory = 'Senior Boys' | 'Junior Boys' | 'Girls';
 export type Gender = 'Male' | 'Female';
 export type HouseStatus = 'Active' | 'Inactive';
@@ -80,18 +80,6 @@ export interface School {
   total_time_spent?: number;
 }
 
-export interface ActivityLog {
-  id: string;
-  timestamp: string;
-  user_id: string;
-  user_name: string;
-  user_role: string;
-  school_id: string;
-  action: string;
-  details: string;
-  ip_address?: string;
-}
-
 export interface Licence {
   id: string;
   school_id: string;
@@ -111,10 +99,25 @@ export interface AuditLog {
   user_id: string;
   user_name: string;
   user_role: string;
-  school_id?: string;
+  school_id: string;
   school_name?: string;
   action: string;
   resource_type: string;
+  resource_id?: string;
+  details: string;
+  ip_address?: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  timestamp: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  school_id: string;
+  school_name?: string;
+  action: string;
+  resource_type?: string;
   resource_id?: string;
   details: string;
   ip_address?: string;
@@ -124,11 +127,9 @@ export interface AuthUser {
   id: string;
   name: string;
   username: string;
-  role: UserRole | 'master';
+  role: UserRole;
   assigned_house_id?: string;
   email?: string;
   school_id?: string;
   school_name?: string;
-  session_token?: string;
-  session_expiry?: string;
 }

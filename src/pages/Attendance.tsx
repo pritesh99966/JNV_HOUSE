@@ -5,10 +5,11 @@ import { Student, AttendanceStatus, AttendanceSession } from '../types';
 import { Save, RotateCcw, CheckCheck, AlertCircle, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
-const STATUS_OPTIONS: AttendanceStatus[] = ['Present', 'Leave', 'Sick', 'OD', 'Staff Ward', 'Absent(Missing)', 'NR', 'Suspended'];
+const STATUS_OPTIONS: AttendanceStatus[] = ['Present', 'Absent', 'Leave', 'Sick', 'OD', 'Staff Ward', 'Absent(Missing)', 'NR', 'Suspended'];
 
 const STATUS_COLORS: Record<string, string> = {
   Present: 'bg-green-100 text-green-700 border-green-300',
+  Absent: 'bg-red-100 text-red-700 border-red-300',
   Leave: 'bg-yellow-100 text-yellow-700 border-yellow-300',
   Sick: 'bg-orange-100 text-orange-700 border-orange-300',
   OD: 'bg-blue-100 text-blue-700 border-blue-300',
@@ -103,9 +104,10 @@ export default function Attendance() {
   };
 
   const summary = useMemo(() => {
-    let present = 0, leave = 0, sick = 0, od = 0, staffWard = 0, absentMissing = 0, nr = 0, suspended = 0;
+    let present = 0, absent = 0, leave = 0, sick = 0, od = 0, staffWard = 0, absentMissing = 0, nr = 0, suspended = 0;
     Object.values(attendanceData).forEach(status => { 
       if (status === 'Present') present++; 
+      else if (status === 'Absent') absent++;
       else if (status === 'Leave') leave++; 
       else if (status === 'Sick') sick++; 
       else if (status === 'OD') od++; 
@@ -114,7 +116,7 @@ export default function Attendance() {
       else if (status === 'NR') nr++;
       else if (status === 'Suspended') suspended++;
     });
-    return { present, leave, sick, od, staffWard, absentMissing, nr, suspended, total: houseStudents.length, marked: present + leave + sick + od + staffWard + absentMissing + nr + suspended };
+    return { present, absent, leave, sick, od, staffWard, absentMissing, nr, suspended, total: houseStudents.length, marked: present + absent + leave + sick + od + staffWard + absentMissing + nr + suspended };
   }, [attendanceData, houseStudents]);
 
   const classes = [...new Set(houseStudents.map((s: Student) => s.class))].sort();
@@ -148,8 +150,9 @@ export default function Attendance() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3">
         <div className="bg-green-50 rounded-lg p-3 text-center border border-green-100"><p className="text-xl font-bold text-green-700">{summary.present}</p><p className="text-xs text-green-600">Present</p></div>
+        <div className="bg-red-50 rounded-lg p-3 text-center border border-red-100"><p className="text-xl font-bold text-red-700">{summary.absent}</p><p className="text-xs text-red-600">Absent</p></div>
         <div className="bg-yellow-50 rounded-lg p-3 text-center border border-yellow-100"><p className="text-xl font-bold text-yellow-700">{summary.leave}</p><p className="text-xs text-yellow-600">Leave</p></div>
         <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-100"><p className="text-xl font-bold text-orange-700">{summary.sick}</p><p className="text-xs text-orange-600">Sick</p></div>
         <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-100"><p className="text-xl font-bold text-blue-700">{summary.od}</p><p className="text-xs text-blue-600">OD</p></div>
@@ -227,6 +230,7 @@ export default function Attendance() {
             <p className="text-sm text-gray-600 mb-4">Saving <strong>{selectedSession.toLowerCase()}</strong> attendance for <strong>{summary.marked}</strong> students in <strong>{house?.house_name}</strong> on <strong>{selectedDate}</strong>.</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center text-xs">
               <div className="bg-green-50 p-2 rounded"><span className="font-bold text-green-700">{summary.present}</span><br/>Present</div>
+              <div className="bg-red-50 p-2 rounded"><span className="font-bold text-red-700">{summary.absent}</span><br/>Absent</div>
               <div className="bg-yellow-50 p-2 rounded"><span className="font-bold text-yellow-700">{summary.leave}</span><br/>Leave</div>
               <div className="bg-orange-50 p-2 rounded"><span className="font-bold text-orange-700">{summary.sick}</span><br/>Sick</div>
               <div className="bg-blue-50 p-2 rounded"><span className="font-bold text-blue-700">{summary.od}</span><br/>OD</div>
