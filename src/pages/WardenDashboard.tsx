@@ -41,7 +41,7 @@ export default function WardenDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">{house.house_name}</h1>
-          <p className="text-gray-500 text-sm">Warden: {warden?.name || 'N/A'} | {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-500 text-sm">House Master: {warden?.name || 'N/A'} | {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {morningDone ? '✓' : '⏳'}</span>

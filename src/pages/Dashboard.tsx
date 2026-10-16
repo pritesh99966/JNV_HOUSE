@@ -69,7 +69,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center mb-3"><UserCheck className="w-5 h-5" /></div>
             <p className="text-2xl font-bold text-gray-800">{totalStats.totalWardens}</p>
-            <p className="text-xs text-gray-500 mt-1">Total Wardens</p>
+            <p className="text-xs text-gray-500 mt-1">Total House Masters</p>
           </div>
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 text-white">
             <p className="text-purple-200 text-xs">Schools</p>
@@ -114,7 +114,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{isAdmin ? 'Admin' : 'Warden'} Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{isAdmin ? 'Admin' : 'House Master'} Dashboard</h1>
           <p className="text-gray-500 text-sm">{user?.school_name} - {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
       </div>

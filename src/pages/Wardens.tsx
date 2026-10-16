@@ -26,8 +26,8 @@ export default function Wardens() {
     <div className="space-y-4">
       {toast && <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>{toast.message}</div>}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold text-gray-800">Warden Management</h1><p className="text-gray-500 text-sm">{wardens.length} wardens</p></div>
-        <button onClick={openAddForm} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"><Plus className="w-4 h-4" /> Add Warden</button>
+        <div><h1 className="text-2xl font-bold text-gray-800">House Master Management</h1><p className="text-gray-500 text-sm">{wardens.length} house masters</p></div>
+        <button onClick={openAddForm} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"><Plus className="w-4 h-4" /> Add House Master</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -57,7 +57,7 @@ export default function Wardens() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b"><h2 className="text-lg font-bold">{editingWarden ? 'Edit' : 'Add'} Warden</h2><button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
+            <div className="flex items-center justify-between p-5 border-b"><h2 className="text-lg font-bold">{editingWarden ? 'Edit' : 'Add'} House Master</h2><button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
             <div className="p-5 space-y-4">
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Name *</label><input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div className="grid grid-cols-2 gap-4">
@@ -78,7 +78,7 @@ export default function Wardens() {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full"><h3 className="text-lg font-bold mb-2">Delete Warden?</h3><p className="text-sm text-gray-600 mb-4">This will permanently remove this warden.</p>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full"><h3 className="text-lg font-bold mb-2">Delete House Master?</h3><p className="text-sm text-gray-600 mb-4">This will permanently remove this house master.</p>
             <div className="flex justify-end gap-3"><button onClick={() => setShowDeleteConfirm(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button><button onClick={() => { deleteWarden(showDeleteConfirm); setShowDeleteConfirm(null); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Delete</button></div>
           </div>
         </div>

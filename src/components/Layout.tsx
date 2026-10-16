@@ -25,7 +25,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/houses', icon: Building2, label: 'Houses' },
     { path: '/admin/students', icon: Users, label: 'Students' },
-    { path: '/admin/wardens', icon: UserCheck, label: 'Wardens' },
+    { path: '/admin/wardens', icon: UserCheck, label: 'House Masters' },
     { path: '/admin/attendance', icon: ClipboardList, label: 'Attendance' },
     { path: '/admin/attendance-history', icon: History, label: 'Attendance History' },
     { path: '/admin/reports', icon: FileText, label: 'Reports' },
@@ -90,7 +90,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Home className="w-5 h-5 text-indigo-600" />
               <span className="text-sm text-gray-600 hidden sm:inline">
                 {user?.school_name ? `${user.school_name} - ` : ''}
-                {isMaster ? 'Master Admin Panel' : isAdmin ? 'School Admin Panel' : `${assignedHouse?.house_name || 'Warden'} Panel`}
+                {isMaster ? 'Master Admin Panel' : isAdmin ? 'School Admin Panel' : `${assignedHouse?.house_name || 'House Master'} Panel`}
               </span>
             </div>
             <div className="relative">

@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setUser(wardenUser);
         localStorage.setItem('hms_current_user', JSON.stringify(wardenUser));
-        return { success: true, message: 'Warden login successful' };
+        return { success: true, message: 'House Master login successful' };
       }
     }
     

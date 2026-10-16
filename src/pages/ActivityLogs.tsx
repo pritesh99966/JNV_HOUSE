@@ -158,7 +158,7 @@ export default function ActivityLogs() {
             onChange={e => setFilterWarden(e.target.value)}
             className="px-3 py-2 border rounded-lg text-sm"
           >
-            <option value="">All Wardens</option>
+            <option value="">All House Masters</option>
             {wardens.map((w: any) => (
               <option key={w.id} value={w.id}>{w.name}</option>
             ))}

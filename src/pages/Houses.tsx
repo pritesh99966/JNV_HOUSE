@@ -38,7 +38,7 @@ export default function Houses() {
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${h.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{h.status}</span>
               </div>
               <div className="flex items-center gap-2 mb-3"><Users className="w-4 h-4 text-indigo-500" /><span className="text-sm text-gray-600"><strong>{studentCount}</strong> students</span></div>
-              <div className="text-sm text-gray-600 mb-4"><p><span className="text-gray-400">Warden:</span> <span className="font-medium">{warden?.name || 'Not Assigned'}</span></p></div>
+              <div className="text-sm text-gray-600 mb-4"><p><span className="text-gray-400">House Master:</span> <span className="font-medium">{warden?.name || 'Not Assigned'}</span></p></div>
               <div className="flex gap-2 pt-3 border-t">
                 <button onClick={() => openEditForm(h)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100"><Edit2 className="w-3 h-3" /> Edit</button>
                 <button onClick={() => setShowDeleteConfirm(h.id)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100"><Trash2 className="w-3 h-3" /> Delete</button>

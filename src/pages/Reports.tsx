@@ -42,6 +42,9 @@ export default function Reports() {
           baseData['Morning Sick'] = morningRecords.filter((r: any) => r.status === 'Sick').length;
           baseData['Morning OD'] = morningRecords.filter((r: any) => r.status === 'OD').length;
           baseData['Morning Staff Ward'] = morningRecords.filter((r: any) => r.status === 'Staff Ward').length;
+          baseData['Morning Absent(Missing)'] = morningRecords.filter((r: any) => r.status === 'Absent(Missing)').length;
+          baseData['Morning NR'] = morningRecords.filter((r: any) => r.status === 'NR').length;
+          baseData['Morning Suspended'] = morningRecords.filter((r: any) => r.status === 'Suspended').length;
         }
 
         if (selectedSession === 'Night' || selectedSession === 'Both') {
@@ -50,6 +53,9 @@ export default function Reports() {
           baseData['Night Sick'] = nightRecords.filter((r: any) => r.status === 'Sick').length;
           baseData['Night OD'] = nightRecords.filter((r: any) => r.status === 'OD').length;
           baseData['Night Staff Ward'] = nightRecords.filter((r: any) => r.status === 'Staff Ward').length;
+          baseData['Night Absent(Missing)'] = nightRecords.filter((r: any) => r.status === 'Absent(Missing)').length;
+          baseData['Night NR'] = nightRecords.filter((r: any) => r.status === 'NR').length;
+          baseData['Night Suspended'] = nightRecords.filter((r: any) => r.status === 'Suspended').length;
         }
 
         return baseData;
@@ -71,7 +77,10 @@ export default function Reports() {
         const sick = monthRecords.filter((r: any) => r.status === 'Sick').length;
         const od = monthRecords.filter((r: any) => r.status === 'OD').length;
         const sw = monthRecords.filter((r: any) => r.status === 'Staff Ward').length;
-        const leaveDays = ((leave + sick + od + sw) / (selectedSession === 'Both' ? 2 : 1)).toFixed(1);
+        const am = monthRecords.filter((r: any) => r.status === 'Absent(Missing)').length;
+        const nr = monthRecords.filter((r: any) => r.status === 'NR').length;
+        const suspended = monthRecords.filter((r: any) => r.status === 'Suspended').length;
+        const leaveDays = ((leave + sick + od + sw + am + nr + suspended) / (selectedSession === 'Both' ? 2 : 1)).toFixed(1);
         const percentage = monthRecords.length > 0 ? ((present / monthRecords.length) * 100).toFixed(1) : '0.0';
         
         const baseData: any = { 
@@ -84,11 +93,23 @@ export default function Reports() {
         if (selectedSession === 'Morning' || selectedSession === 'Both') {
           baseData['Morning Present'] = morningRecords.filter((r: any) => r.status === 'Present').length;
           baseData['Morning Leave'] = morningRecords.filter((r: any) => r.status === 'Leave').length;
+          baseData['Morning Sick'] = morningRecords.filter((r: any) => r.status === 'Sick').length;
+          baseData['Morning OD'] = morningRecords.filter((r: any) => r.status === 'OD').length;
+          baseData['Morning Staff Ward'] = morningRecords.filter((r: any) => r.status === 'Staff Ward').length;
+          baseData['Morning Absent(Missing)'] = morningRecords.filter((r: any) => r.status === 'Absent(Missing)').length;
+          baseData['Morning NR'] = morningRecords.filter((r: any) => r.status === 'NR').length;
+          baseData['Morning Suspended'] = morningRecords.filter((r: any) => r.status === 'Suspended').length;
         }
 
         if (selectedSession === 'Night' || selectedSession === 'Both') {
           baseData['Night Present'] = nightRecords.filter((r: any) => r.status === 'Present').length;
           baseData['Night Leave'] = nightRecords.filter((r: any) => r.status === 'Leave').length;
+          baseData['Night Sick'] = nightRecords.filter((r: any) => r.status === 'Sick').length;
+          baseData['Night OD'] = nightRecords.filter((r: any) => r.status === 'OD').length;
+          baseData['Night Staff Ward'] = nightRecords.filter((r: any) => r.status === 'Staff Ward').length;
+          baseData['Night Absent(Missing)'] = nightRecords.filter((r: any) => r.status === 'Absent(Missing)').length;
+          baseData['Night NR'] = nightRecords.filter((r: any) => r.status === 'NR').length;
+          baseData['Night Suspended'] = nightRecords.filter((r: any) => r.status === 'Suspended').length;
         }
 
         baseData['Total Present'] = present;
@@ -96,6 +117,9 @@ export default function Reports() {
         baseData['Total Sick'] = sick;
         baseData['Total OD'] = od;
         baseData['Total Staff Ward'] = sw;
+        baseData['Total Absent(Missing)'] = am;
+        baseData['Total NR'] = nr;
+        baseData['Total Suspended'] = suspended;
         baseData['Leave Days'] = leaveDays;
         baseData['Attendance %'] = percentage;
 
