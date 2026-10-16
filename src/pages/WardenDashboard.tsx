@@ -15,34 +15,33 @@ export default function WardenDashboard() {
   const warden = wardens.find((w: { id: string }) => w.id === user?.id);
   const morningSummary = useMemo(() => getAttendanceSummary(houseId, today, 'Morning'), [houseId, today, attendance, students, getAttendanceSummary]);
   const nightSummary = useMemo(() => getAttendanceSummary(houseId, today, 'Night'), [houseId, today, attendance, students, getAttendanceSummary]);
-  const morningDone = morningSummary.present + morningSummary.absent + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
-  const nightDone = nightSummary.present + nightSummary.absent + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
+  const morningDone = morningSummary.present + morningSummary.leave + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
+  const nightDone = nightSummary.present + nightSummary.leave + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
   const percentage = morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0';
 
   if (!house) return <div className="text-center py-10 text-gray-500">No house assigned</div>;
 
   const morningPieData = [
     { name: 'Present', value: morningSummary.present },
-    { name: 'Absent', value: morningSummary.absent },
+    { name: 'Leave', value: morningSummary.leave },
     { name: 'Sick', value: morningSummary.sick },
     { name: 'On Duty', value: morningSummary.od },
     { name: 'Staff Ward', value: morningSummary.staffWard }
   ].filter(item => item.value > 0);
-
+  
   const nightPieData = [
     { name: 'Present', value: nightSummary.present },
-    { name: 'Absent', value: nightSummary.absent },
+    { name: 'Leave', value: nightSummary.leave },
     { name: 'Sick', value: nightSummary.sick },
     { name: 'On Duty', value: nightSummary.od },
     { name: 'Staff Ward', value: nightSummary.staffWard }
   ].filter(item => item.value > 0);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">{house.house_name}</h1>
-          <p className="text-gray-500 text-sm">Warden: {warden?.name || 'N/A'} | {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-500 text-sm">House Master: {warden?.name || 'N/A'} | {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`px-2 py-1 rounded-lg text-xs font-medium ${morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ Morning {morningDone ? '✓' : '⏳'}</span>
@@ -73,8 +72,8 @@ export default function WardenDashboard() {
             <p className="text-xs text-gray-600 mt-1">Present</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <p className="text-3xl font-bold text-red-600">{morningSummary.absent}</p>
-            <p className="text-xs text-gray-600 mt-1">Absent</p>
+            <p className="text-3xl font-bold text-red-600">{morningSummary.leave}</p>
+            <p className="text-xs text-gray-600 mt-1">Leave</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-3xl font-bold text-yellow-600">{morningSummary.sick}</p>
@@ -114,8 +113,8 @@ export default function WardenDashboard() {
             <p className="text-xs text-gray-600 mt-1">Present</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <p className="text-3xl font-bold text-red-600">{nightSummary.absent}</p>
-            <p className="text-xs text-gray-600 mt-1">Absent</p>
+            <p className="text-3xl font-bold text-red-600">{nightSummary.leave}</p>
+            <p className="text-xs text-gray-600 mt-1">Leave</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-3xl font-bold text-yellow-600">{nightSummary.sick}</p>

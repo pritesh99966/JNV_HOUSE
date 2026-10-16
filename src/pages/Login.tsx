@@ -69,7 +69,7 @@ export default function Login() {
               <p className="font-medium text-gray-700 mt-2">School Admins:</p>
               <p>kv001 / KV@2024#Secure!</p>
               <p>kv002 / KV2@Admin#2024</p>
-              <p className="font-medium text-gray-700 mt-2">Wardens:</p>
+              <p className="font-medium text-gray-700 mt-2">House Masters:</p>
               <p>KV001: kv001_w1 / wardenKV001</p>
               <p>KV002: kv002_w1 / wardenKV002</p>
             </div>

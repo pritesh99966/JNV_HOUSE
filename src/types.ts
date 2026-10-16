@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'Present' | 'Absent' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward' | 'Absent(Missing)' | 'NR' | 'Suspended';
+export type AttendanceStatus = 'Present' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward' | 'Absent(Missing)' | 'NR' | 'Suspended';
 export type AttendanceSession = 'Morning' | 'Night';
 export type UserRole = 'admin' | 'warden' | 'master';
 export type HouseCategory = 'Senior Boys' | 'Junior Boys' | 'Girls';

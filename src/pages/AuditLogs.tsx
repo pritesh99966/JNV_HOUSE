@@ -148,7 +148,7 @@ export default function AuditLogs() {
             <option value="">All Roles</option>
             <option value="master">Master</option>
             <option value="admin">School Admin</option>
-            <option value="warden">Warden</option>
+            <option value="warden">House Master</option>
           </select>
           <input 
             type="date" 

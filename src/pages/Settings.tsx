@@ -91,10 +91,10 @@ export default function Settings() {
     { label: 'Total Schools', value: schools.length },
     { label: 'Total Houses', value: houses.length },
     { label: 'Total Students', value: students.length },
-    { label: 'Total Wardens', value: wardens.length },
+    { label: 'Total House Masters', value: wardens.length },
   ] : [
     { label: 'Total Houses', value: houses.length },
-    { label: 'Total Wardens', value: wardens.length },
+    { label: 'Total House Masters', value: wardens.length },
     { label: 'Total Students', value: students.length },
     { label: 'Attendance Records', value: attendance.length },
   ];
