@@ -85,6 +85,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const deleteSchool = (id: string) => {
+    // Delete all school-related data from localStorage
+    localStorage.removeItem(`hms_${id}_houses`);
+    localStorage.removeItem(`hms_${id}_wardens`);
+    localStorage.removeItem(`hms_${id}_students`);
+    localStorage.removeItem(`hms_${id}_attendance`);
+    
+    // Delete school from schools array
     const updated = data.schools.filter((s: School) => s.id !== id);
     setData(d => ({ ...d, schools: updated }));
     localStorage.setItem('hms_schools', JSON.stringify(updated));
