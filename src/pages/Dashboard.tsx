@@ -16,8 +16,8 @@ export default function Dashboard() {
       const morningSummary = getAttendanceSummary(house.id, today, 'Morning');
       const nightSummary = getAttendanceSummary(house.id, today, 'Night');
       const warden = wardens.find((w: any) => w.assigned_house_id === house.id);
-      const morningDone = morningSummary.present + morningSummary.absent + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
-      const nightDone = nightSummary.present + nightSummary.absent + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
+      const morningDone = morningSummary.present + morningSummary.leave + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
+      const nightDone = nightSummary.present + nightSummary.leave + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
       const percentage = morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0';
       return { ...house, ...morningSummary, morningDone, nightDone, nightSummary, warden, percentage };
     });

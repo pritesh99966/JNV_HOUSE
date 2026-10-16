@@ -25,7 +25,7 @@ interface DataContextType {
   saveAttendance: (studentId: string, houseId: string, date: string, session: AttendanceSession, status: AttendanceStatus, remark: string, markedBy: string) => boolean;
   bulkSaveAttendance: (records: { student_id: string; house_id: string; status: AttendanceStatus; remark: string }[], date: string, session: AttendanceSession, markedBy: string) => void;
   getAttendanceForDate: (houseId: string, date: string, session: AttendanceSession) => Attendance[];
-  getAttendanceSummary: (houseId: string, date: string, session: AttendanceSession) => { present: number; absent: number; sick: number; od: number; staffWard: number; total: number };
+  getAttendanceSummary: (houseId: string, date: string, session: AttendanceSession) => { present: number; leave: number; sick: number; od: number; staffWard: number; total: number };
   refreshData: () => void;
 }
 
@@ -201,7 +201,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const activeStudents = data.students.filter((s: Student) => s.house_id === houseId && s.status === 'Active');
     return {
       present: records.filter((r: Attendance) => r.status === 'Present').length,
-      absent: records.filter((r: Attendance) => r.status === 'Leave').length,
+      leave: records.filter((r: Attendance) => r.status === 'Leave').length,
       sick: records.filter((r: Attendance) => r.status === 'Sick').length,
       od: records.filter((r: Attendance) => r.status === 'OD').length,
       staffWard: records.filter((r: Attendance) => r.status === 'Staff Ward').length,
