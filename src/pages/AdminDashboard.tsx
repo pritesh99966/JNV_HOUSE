@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserCheck, UserX, CheckCircle2, XCircle, AlertTriangle, Building2 } from 'lucide-react';
 import { getLicenceDaysRemaining } from '../utils/schoolManagement';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 export default function AdminDashboard() {
   const { houses, students, attendance, wardens, getAttendanceSummary } = useData();
@@ -26,18 +27,18 @@ export default function AdminDashboard() {
 
   const totalStats = useMemo(() => {
     const totalStudents = students.filter((s: { status: string }) => s.status === 'Active').length;
-    let morningPresent = 0, morningAbsent = 0, morningSick = 0, morningOD = 0, morningStaffWard = 0;
-    let nightPresent = 0, nightAbsent = 0, nightSick = 0, nightOD = 0, nightStaffWard = 0;
+    let morningPresent = 0, morningLeave = 0, morningSick = 0, morningOD = 0, morningStaffWard = 0;
+    let nightPresent = 0, nightLeave = 0, nightSick = 0, nightOD = 0, nightStaffWard = 0;
     
     houseSummaries.forEach((h: any) => {
       morningPresent += h.present;
-      morningAbsent += h.absent;
+      morningLeave += h.leave;
       morningSick += h.sick;
       morningOD += h.od;
       morningStaffWard += h.staffWard;
       
       nightPresent += h.nightSummary.present;
-      nightAbsent += h.nightSummary.absent;
+      nightLeave += h.nightSummary.leave;
       nightSick += h.nightSummary.sick;
       nightOD += h.nightSummary.od;
       nightStaffWard += h.nightSummary.staffWard;
@@ -51,14 +52,32 @@ export default function AdminDashboard() {
     
     return { 
       totalStudents, 
-      morningPresent, morningAbsent, morningSick, morningOD, morningStaffWard,
-      nightPresent, nightAbsent, nightSick, nightOD, nightStaffWard,
+      morningPresent, morningLeave, morningSick, morningOD, morningStaffWard,
+      nightPresent, nightLeave, nightSick, nightOD, nightStaffWard,
       overallMorningAttendance, overallNightAttendance, attendancePercentage, 
       completedHouses, totalHouses: houseSummaries.length 
     };
   }, [houseSummaries, students]);
 
   const daysRemaining = getLicenceDaysRemaining(user?.school_id || '');
+
+  // Prepare pie chart data for Morning attendance
+  const morningPieData = [
+    { name: 'Present', value: totalStats.morningPresent },
+    { name: 'Leave', value: totalStats.morningLeave },
+    { name: 'Sick', value: totalStats.morningSick },
+    { name: 'On Duty', value: totalStats.morningOD },
+    { name: 'Staff Ward', value: totalStats.morningStaffWard }
+  ].filter(item => item.value > 0);
+
+  // Prepare pie chart data for Night attendance
+  const nightPieData = [
+    { name: 'Present', value: totalStats.nightPresent },
+    { name: 'Leave', value: totalStats.nightLeave },
+    { name: 'Sick', value: totalStats.nightSick },
+    { name: 'On Duty', value: totalStats.nightOD },
+    { name: 'Staff Ward', value: totalStats.nightStaffWard }
+  ].filter(item => item.value > 0);
 
   return (
     <div className="space-y-6">
@@ -107,8 +126,8 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-600 mt-1">Present</p>
           </div>
           <div className="bg-white rounded-lg p-3 shadow-sm">
-            <p className="text-2xl font-bold text-red-600">{totalStats.morningAbsent}</p>
-            <p className="text-xs text-gray-600 mt-1">Absent</p>
+            <p className="text-2xl font-bold text-red-600">{totalStats.morningLeave}</p>
+            <p className="text-xs text-gray-600 mt-1">Leave</p>
           </div>
           <div className="bg-white rounded-lg p-3 shadow-sm">
             <p className="text-2xl font-bold text-yellow-600">{totalStats.morningSick}</p>
@@ -140,8 +159,8 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-600 mt-1">Present</p>
           </div>
           <div className="bg-white rounded-lg p-3 shadow-sm">
-            <p className="text-2xl font-bold text-red-600">{totalStats.nightAbsent}</p>
-            <p className="text-xs text-gray-600 mt-1">Absent</p>
+            <p className="text-2xl font-bold text-red-600">{totalStats.nightLeave}</p>
+            <p className="text-xs text-gray-600 mt-1">Leave</p>
           </div>
           <div className="bg-white rounded-lg p-3 shadow-sm">
             <p className="text-2xl font-bold text-yellow-600">{totalStats.nightSick}</p>
@@ -182,6 +201,71 @@ export default function AdminDashboard() {
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white">
           <p className="text-indigo-200 text-xs">Overall Attendance</p>
           <p className="text-3xl font-bold mt-1">{totalStats.attendancePercentage}%</p>
+        </div>
+      </div>
+
+      {/* Attendance Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Morning Attendance Chart */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            ☀️ Morning Attendance Distribution
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={morningPieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#f97316" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#8b5cf6" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Night Attendance Chart */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            🌙 Night Attendance Distribution
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={nightPieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#f97316" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#8b5cf6" />
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
