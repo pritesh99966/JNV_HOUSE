@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Users, UserCheck, Home, CheckCircle2 } from 'lucide-react';
 
 export default function Dashboard() {
-  const { houses, students, attendance, wardens, getAttendanceSummary } = useData();
+  const { houses, students, attendance, wardens, getAttendanceSummary, schools } = useData();
   const { user } = useAuth();
   const today = new Date().toISOString().split('T')[0];
   const isMaster = user?.role === 'master';
@@ -16,8 +16,8 @@ export default function Dashboard() {
       const morningSummary = getAttendanceSummary(house.id, today, 'Morning');
       const nightSummary = getAttendanceSummary(house.id, today, 'Night');
       const warden = wardens.find((w: any) => w.assigned_house_id === house.id);
-      const morningDone = morningSummary.present + morningSummary.absent + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
-      const nightDone = nightSummary.present + nightSummary.absent + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
+      const morningDone = morningSummary.present + morningSummary.leave + morningSummary.sick + morningSummary.od + morningSummary.staffWard > 0;
+      const nightDone = nightSummary.present + nightSummary.leave + nightSummary.sick + nightSummary.od + nightSummary.staffWard > 0;
       const percentage = morningSummary.total > 0 ? ((morningSummary.present / morningSummary.total) * 100).toFixed(1) : '0.0';
       return { ...house, ...morningSummary, morningDone, nightDone, nightSummary, warden, percentage };
     });
@@ -58,6 +58,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center mb-3"><Home className="w-5 h-5" /></div>
+            <p className="text-2xl font-bold text-gray-800">{schools.length}</p>
+            <p className="text-xs text-gray-500 mt-1">Total Schools</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center mb-3"><Home className="w-5 h-5" /></div>
             <p className="text-2xl font-bold text-gray-800">{totalStats.totalHouses}</p>
             <p className="text-xs text-gray-500 mt-1">Total Houses</p>
           </div>
@@ -69,11 +74,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center mb-3"><UserCheck className="w-5 h-5" /></div>
             <p className="text-2xl font-bold text-gray-800">{totalStats.totalWardens}</p>
-            <p className="text-xs text-gray-500 mt-1">Total Wardens</p>
-          </div>
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 text-white">
-            <p className="text-purple-200 text-xs">Schools</p>
-            <p className="text-3xl font-bold mt-1">2</p>
+            <p className="text-xs text-gray-500 mt-1">Total House Masters</p>
           </div>
         </div>
 
@@ -90,18 +91,14 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">Kendriya Vidyalaya No. 1</td>
-                  <td className="px-4 py-3 text-gray-600">KV001</td>
-                  <td className="px-4 py-3 text-gray-600">Rajesh Kumar</td>
-                  <td className="text-center px-4 py-3"><span className="px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span></td>
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">Kendriya Vidyalaya No. 2</td>
-                  <td className="px-4 py-3 text-gray-600">KV002</td>
-                  <td className="px-4 py-3 text-gray-600">Suresh Patel</td>
-                  <td className="text-center px-4 py-3"><span className="px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span></td>
-                </tr>
+                {schools.map((school: any) => (
+                  <tr key={school.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{school.name}</td>
+                    <td className="px-4 py-3 text-gray-600">{school.code}</td>
+                    <td className="px-4 py-3 text-gray-600">{school.admin_name}</td>
+                    <td className="text-center px-4 py-3"><span className="px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">{school.status}</span></td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -114,7 +111,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{isAdmin ? 'Admin' : 'Warden'} Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{isAdmin ? 'Admin' : 'House Master'} Dashboard</h1>
           <p className="text-gray-500 text-sm">{user?.school_name} - {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
       </div>
@@ -152,6 +149,7 @@ export default function Dashboard() {
                 <th className="text-center px-3 py-3 font-medium text-gray-600">🌙 Night</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">Total</th>
                 <th className="text-center px-3 py-3 font-medium text-gray-600">%</th>
+                <th className="text-center px-3 py-3 font-medium text-gray-600">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -162,6 +160,12 @@ export default function Dashboard() {
                   <td className="text-center px-3 py-3"><span className={`px-2 py-1 rounded text-xs font-medium ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>{house.nightSummary.present} Present</span></td>
                   <td className="text-center px-3 py-3 font-bold">{house.total}</td>
                   <td className="text-center px-3 py-3 font-medium">{house.percentage}%</td>
+                  <td className="text-center px-3 py-3">
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.morningDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>☀️ {house.morningDone ? '✓' : '⏳'}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${house.nightDone ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>🌙 {house.nightDone ? '✓' : '⏳'}</span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -42,29 +42,35 @@ export default function StudentMonthlyReport() {
       const morningSick = count(morningRecords, 'Sick');
       const morningOD = count(morningRecords, 'OD');
       const morningSW = count(morningRecords, 'Staff Ward');
+      const morningNR = count(morningRecords, 'NR');
+      const morningSuspended = count(morningRecords, 'Suspended');
       
       const nightPresent = count(nightRecords, 'Present');
       const nightLeave = count(nightRecords, 'Leave');
       const nightSick = count(nightRecords, 'Sick');
       const nightOD = count(nightRecords, 'OD');
       const nightSW = count(nightRecords, 'Staff Ward');
+      const nightNR = count(nightRecords, 'NR');
+      const nightSuspended = count(nightRecords, 'Suspended');
       
       const totalPresent = morningPresent + nightPresent;
       const totalLeave = morningLeave + nightLeave;
       const totalSick = morningSick + nightSick;
       const totalOD = morningOD + nightOD;
       const totalSW = morningSW + nightSW;
+      const totalNR = morningNR + nightNR;
+      const totalSuspended = morningSuspended + nightSuspended;
       const totalRecords = monthRecords.length;
       
       const percentage = totalRecords > 0 ? ((totalPresent / totalRecords) * 100) : 0;
-      const leaveDays = (totalLeave + totalSick + totalOD + totalSW) / 2;
+      const leaveDays = (totalLeave + totalSick + totalOD + totalSW + totalNR + totalSuspended) / 2;
       
       return {
         student,
         house: house?.house_name || '',
-        morningPresent, morningLeave, morningSick, morningOD, morningSW,
-        nightPresent, nightLeave, nightSick, nightOD, nightSW,
-        totalPresent, totalLeave, totalSick, totalOD, totalSW, totalRecords,
+        morningPresent, morningLeave, morningSick, morningOD, morningSW, morningNR, morningSuspended,
+        nightPresent, nightLeave, nightSick, nightOD, nightSW, nightNR, nightSuspended,
+        totalPresent, totalLeave, totalSick, totalOD, totalSW, totalNR, totalSuspended, totalRecords,
         percentage: parseFloat(percentage.toFixed(1)),
         leaveDays: parseFloat(leaveDays.toFixed(1)),
       };
@@ -119,16 +125,22 @@ export default function StudentMonthlyReport() {
         'Morning Sick': r.morningSick,
         'Morning OD': r.morningOD,
         'Morning Staff Ward': r.morningSW,
+        'Morning NR': r.morningNR,
+        'Morning Suspended': r.morningSuspended,
         'Night Present': r.nightPresent,
         'Night Leave': r.nightLeave,
         'Night Sick': r.nightSick,
         'Night OD': r.nightOD,
         'Night Staff Ward': r.nightSW,
+        'Night NR': r.nightNR,
+        'Night Suspended': r.nightSuspended,
         'Total Present': r.totalPresent,
         'Total Leave': r.totalLeave,
         'Total Sick': r.totalSick,
         'Total OD': r.totalOD,
         'Total Staff Ward': r.totalSW,
+        'Total NR': r.totalNR,
+        'Total Suspended': r.totalSuspended,
         'Leave Days': r.leaveDays,
         'Attendance %': r.percentage,
       }));
@@ -452,8 +464,8 @@ export default function StudentMonthlyReport() {
                 <th className="text-left px-3 py-2 text-xs font-medium text-gray-600">Sr</th>
                 <th className="text-left px-3 py-2 text-xs font-medium text-gray-600">Student</th>
                 <th className="text-left px-3 py-2 text-xs font-medium text-gray-600">Class</th>
-                <th colSpan={5} className="text-center px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-50 border-b border-orange-200">☀️ Morning</th>
-                <th colSpan={5} className="text-center px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 border-b border-indigo-200">🌙 Night</th>
+                <th colSpan={7} className="text-center px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-50 border-b border-orange-200">☀️ Morning</th>
+                <th colSpan={7} className="text-center px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 border-b border-indigo-200">🌙 Night</th>
                 <th colSpan={4} className="text-center px-2 py-1 text-xs font-semibold text-green-700 bg-green-50 border-b border-green-200">Summary</th>
               </tr>
               <tr className="bg-gray-50 border-b">
@@ -463,11 +475,15 @@ export default function StudentMonthlyReport() {
                 <th className="text-center px-2 py-1 text-xs text-orange-700">S</th>
                 <th className="text-center px-2 py-1 text-xs text-blue-700">OD</th>
                 <th className="text-center px-2 py-1 text-xs text-purple-700">SW</th>
+                <th className="text-center px-2 py-1 text-xs text-gray-700">NR</th>
+                <th className="text-center px-2 py-1 text-xs text-pink-700">Sus</th>
                 <th className="text-center px-2 py-1 text-xs text-green-700">P</th>
                 <th className="text-center px-2 py-1 text-xs text-yellow-700">L</th>
                 <th className="text-center px-2 py-1 text-xs text-orange-700">S</th>
                 <th className="text-center px-2 py-1 text-xs text-blue-700">OD</th>
                 <th className="text-center px-2 py-1 text-xs text-purple-700">SW</th>
+                <th className="text-center px-2 py-1 text-xs text-gray-700">NR</th>
+                <th className="text-center px-2 py-1 text-xs text-pink-700">Sus</th>
                 <th className="text-center px-2 py-1 text-xs text-green-700">Total P</th>
                 <th className="text-center px-2 py-1 text-xs text-yellow-700">Total L</th>
                 <th className="text-center px-2 py-1 text-xs text-orange-700">Leave Days</th>
@@ -496,11 +512,15 @@ export default function StudentMonthlyReport() {
                   <td className="text-center px-2 py-2 text-xs text-orange-600 bg-orange-50/30">{r.morningSick}</td>
                   <td className="text-center px-2 py-2 text-xs text-blue-600 bg-orange-50/30">{r.morningOD}</td>
                   <td className="text-center px-2 py-2 text-xs text-purple-600 bg-orange-50/30">{r.morningSW}</td>
+                  <td className="text-center px-2 py-2 text-xs text-gray-600 bg-orange-50/30">{r.morningNR}</td>
+                  <td className="text-center px-2 py-2 text-xs text-pink-600 bg-orange-50/30">{r.morningSuspended}</td>
                   <td className="text-center px-2 py-2 text-xs text-green-600 font-medium bg-indigo-50/30">{r.nightPresent}</td>
                   <td className="text-center px-2 py-2 text-xs text-yellow-600 bg-indigo-50/30">{r.nightLeave}</td>
                   <td className="text-center px-2 py-2 text-xs text-orange-600 bg-indigo-50/30">{r.nightSick}</td>
                   <td className="text-center px-2 py-2 text-xs text-blue-600 bg-indigo-50/30">{r.nightOD}</td>
                   <td className="text-center px-2 py-2 text-xs text-purple-600 bg-indigo-50/30">{r.nightSW}</td>
+                  <td className="text-center px-2 py-2 text-xs text-gray-600 bg-indigo-50/30">{r.nightNR}</td>
+                  <td className="text-center px-2 py-2 text-xs text-pink-600 bg-indigo-50/30">{r.nightSuspended}</td>
                   <td className="text-center px-2 py-2 text-xs text-green-600 font-bold">{r.totalPresent}</td>
                   <td className="text-center px-2 py-2 text-xs text-yellow-600 font-bold">{r.totalLeave}</td>
                   <td className="text-center px-2 py-2 text-xs text-orange-700 font-bold">{r.leaveDays}</td>
@@ -521,15 +541,17 @@ export default function StudentMonthlyReport() {
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <h4 className="font-semibold text-gray-800 mb-2 text-sm">Legend:</h4>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-3 text-xs">
           <div><span className="font-bold text-green-600">P</span> = Present</div>
           <div><span className="font-bold text-yellow-600">L</span> = Leave</div>
           <div><span className="font-bold text-orange-600">S</span> = Sick</div>
           <div><span className="font-bold text-blue-600">OD</span> = On Duty</div>
           <div><span className="font-bold text-purple-600">SW</span> = Staff Ward</div>
+          <div><span className="font-bold text-gray-600">NR</span> = Not Reported</div>
+          <div><span className="font-bold text-pink-600">Sus</span> = Suspended</div>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          📝 Leave Days = (Leave + Sick + OD + Staff Ward) / 2 (Morning + Night sessions = 1 day)
+          📝 Leave Days = (Leave + Sick + OD + Staff Ward + NR + Suspended) / 2 (Morning + Night sessions = 1 day)
         </p>
       </div>
     </div>

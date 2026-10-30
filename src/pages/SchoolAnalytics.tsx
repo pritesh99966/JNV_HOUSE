@@ -112,7 +112,7 @@ export default function SchoolAnalytics() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">School Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Code</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Students</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Wardens</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600">House Masters</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Houses</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600">Licence</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Last Login</th>

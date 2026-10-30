@@ -1,18 +1,13 @@
-export type AttendanceStatus = 'Present' | 'Absent' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward' | 'Absent(Missing)' | 'NR' | 'Suspended';
+export type AttendanceStatus = 'Present' | 'Absent' | 'Leave' | 'Sick' | 'OD' | 'Staff Ward';
 export type AttendanceSession = 'Morning' | 'Night';
 export type UserRole = 'admin' | 'warden' | 'master';
-export type HouseCategory = 'Senior Boys' | 'Junior Boys' | 'Girls';
-export type Gender = 'Male' | 'Female';
-export type HouseStatus = 'Active' | 'Inactive';
-export type WardenStatus = 'Active' | 'Inactive';
-export type StudentStatus = 'Active' | 'Inactive';
 
 export interface House {
   id: string;
   house_name: string;
-  category: HouseCategory;
-  gender: Gender;
-  status: HouseStatus;
+  category: string;
+  gender: string;
+  status: string;
   created_at: string;
 }
 
@@ -24,7 +19,7 @@ export interface Warden {
   mobile: string;
   password: string;
   assigned_house_id: string;
-  status: WardenStatus;
+  status: string;
   photo_url: string;
   created_at: string;
 }
@@ -33,7 +28,7 @@ export interface Student {
   id: string;
   admission_no: string;
   student_name: string;
-  gender: Gender;
+  gender: string;
   class: string;
   section: string;
   dob: string;
@@ -45,7 +40,7 @@ export interface Student {
   sr_no: string;
   photo_url: string;
   medical_remark: string;
-  status: StudentStatus;
+  status: string;
   created_at: string;
   updated_at: string;
 }
@@ -72,55 +67,12 @@ export interface School {
   admin_name: string;
   admin_email: string;
   created_at: string;
-  status: 'Active' | 'Inactive' | 'Suspended';
+  status: string;
   licence_start_date?: string;
   licence_expiry_date?: string;
-  licence_status?: 'Active' | 'Expired' | 'Suspended';
+  licence_status?: string;
   last_login?: string;
   total_time_spent?: number;
-}
-
-export interface Licence {
-  id: string;
-  school_id: string;
-  plan: 'Basic' | 'Standard' | 'Premium';
-  start_date: string;
-  expiry_date: string;
-  student_limit: number;
-  status: 'Active' | 'Suspended' | 'Expired';
-  amount: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AuditLog {
-  id: string;
-  timestamp: string;
-  user_id: string;
-  user_name: string;
-  user_role: string;
-  school_id: string;
-  school_name?: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string;
-  details: string;
-  ip_address?: string;
-}
-
-export interface ActivityLog {
-  id: string;
-  timestamp: string;
-  user_id: string;
-  user_name: string;
-  user_role: string;
-  school_id: string;
-  school_name?: string;
-  action: string;
-  resource_type?: string;
-  resource_id?: string;
-  details: string;
-  ip_address?: string;
 }
 
 export interface AuthUser {

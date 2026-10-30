@@ -210,7 +210,7 @@ export default function MasterDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{totalWardens}</p>
-              <p className="text-xs text-gray-500">Total Wardens</p>
+              <p className="text-xs text-gray-500">Total House Masters</p>
             </div>
           </div>
         </div>
